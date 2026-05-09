@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: samu-pulse
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    out-of-order: false
+    ignore-migration-patterns: "*:future"
+    placeholder-replacement: true
+#    placeholders:
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: ${UPLOAD_MAX_FILE_SIZE:5MB}
+      max-request-size: ${UPLOAD_MAX_REQUEST_SIZE:10MB}
+
+  server:
+    port: ${SERVER_PORT:8080}
+
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+
+  security:
+    jwt:
+      secret: ${JWT_SECRET:12345678901234567890123456789012}
+      expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+    debug-errors: ${DEBUG_ERRORS:false}
+
+  app:
+#    mail:
+#      from: ${MAIL_FROM}
+#      from-name: ${MAIL_FROM_NAME}
+    messages:
+      field:
+        required:
+          message: "O Campo ({{campo_value}}) não pode estar vazio!"
+
+
+file:
+  upload-dir: ${URL_UPLOADS:docs_upload}

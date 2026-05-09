@@ -1,0 +1,54 @@
+# Arquivos de ajuda gerados por templates (Spring Initializr)
+HELP.md
+
+### Build outputs ###
+**/target/
+**/build/
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### Maven wrapper binary ###
+.mvn/wrapper/maven-wrapper.jar
+
+### Logs ###
+*.log
+
+### STS / Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Environment variables ###
+.env
+.env.*
+!.env.example
+
+### Sistema operacional ###
+.DS_Store
+Thumbs.db
+
+### Local Docs (nao commitar) ###
+docs/
+
