@@ -1,6 +1,6 @@
 package com.example.samu_pulse.domain.historico_mensagem;
 
-import com.example.samu_pulse.domain.novo_convertido.NovoConvertido;
+import com.example.samu_pulse.domain.membro.Membro;
 import com.example.samu_pulse.domain.usuario.Usuario;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,6 +27,6 @@ public class HistoricoMensagem {
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;
     @ManyToOne
-    @JoinColumn(name = "id_novo_convertido")
-    private NovoConvertido novoConvertido;
+    @JoinColumn(name = "id_membro")
+    private Membro membro;
 }

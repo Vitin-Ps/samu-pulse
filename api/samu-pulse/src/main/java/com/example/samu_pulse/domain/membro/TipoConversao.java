@@ -1,4 +1,4 @@
-package com.example.samu_pulse.domain.novo_convertido;
+package com.example.samu_pulse.domain.membro;
 
 import lombok.Getter;
 

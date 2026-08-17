@@ -5,6 +5,7 @@ import com.example.samu_pulse.domain.usuario.dto.DadosUsuarioRequest;
 import com.example.samu_pulse.domain.usuario.dto.UsuarioResponse;
 import com.example.samu_pulse.infra.exception.ApiException;
 import com.example.samu_pulse.repository.UsuarioRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("user")
@@ -24,7 +24,7 @@ public class UsuarioController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<UsuarioResponse> createUser(DadosUsuarioRequest dados) {
+    public ResponseEntity<UsuarioResponse> createUser(@RequestBody @Valid DadosUsuarioRequest dados) {
         Usuario usuario = new Usuario(dados);
 
         usuario = usuarioRepository.save(usuario);
