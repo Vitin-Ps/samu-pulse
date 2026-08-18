@@ -7,14 +7,19 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import {useNavigate} from 'react-router-dom';
 import {Button, Input, TextArea} from '../components/Elements';
+import {FC} from 'react';
+import {useAddMemberModel} from './useAddMemberModel';
+import {formatarNumero} from '../../services/Extra/FuncionalidadesService';
 
-export const AddMemberView = () => {
+export const AddMemberView: FC<ReturnType<typeof useAddMemberModel>> = ({
+  stateModel,
+  salvarMembro,
+}) => {
   const navigate = useNavigate();
 
   return (
     <main className="grow flex items-start justify-center px-4 pb-16 pt-10 w-full">
       <div className="w-full max-w-150 bg-white rounded-3xl shadow-sm border border-samu-border overflow-hidden">
-        {/* Header da Tela */}
         <div className="px-8 pt-8 pb-6 border-b border-samu-border">
           <button
             onClick={() => navigate(-1)}
@@ -28,13 +33,6 @@ export const AddMemberView = () => {
               <h1 className="text-2xl font-semibold tracking-tight text-samu-text leading-tight">
                 Novo Cadastro
               </h1>
-              <p className="text-samu-neutral text-sm mt-1 font-medium flex items-center gap-1.5">
-                <FontAwesomeIcon
-                  icon={faHeartPulse}
-                  className="text-samu-primary opacity-80"
-                />
-                SAMU — Salvando mais um
-              </p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-samu-primary-lighter flex items-center justify-center text-samu-primary shrink-0">
               <FontAwesomeIcon icon={faUserPlus} className="text-lg" />
@@ -43,11 +41,13 @@ export const AddMemberView = () => {
         </div>
 
         {/* Formulário com Componentes Reutilizáveis */}
-        <form className="px-8 py-8" onSubmit={e => e.preventDefault()}>
+        <form className="px-8 py-8" onSubmit={salvarMembro}>
           <Input
             id="nome"
             label="Nome Completo"
             placeholder="Ex: Maria dos Santos Oliveira"
+            value={stateModel.data.nome}
+            onChange={e => stateModel.updateState('nome', e.target.value)}
             required
           />
 
@@ -57,21 +57,35 @@ export const AddMemberView = () => {
               type="tel"
               label="Telefone"
               placeholder="(00) 00000-0000"
+              value={formatarNumero(
+                stateModel.data.telefone ? stateModel.data.telefone : '',
+              )}
+              onChange={e => stateModel.updateState('telefone', e.target.value)}
               required
             />
-            <Input id="nascimento" type="date" label="Data de Nascimento" />
+            <Input
+              id="nascimento"
+              type="date"
+              label="Data de Nascimento"
+              value={stateModel.data.dataNascimento}
+              onChange={e => stateModel.updateState('dataNascimento', e.target.value)}
+            />
           </div>
 
           <Input
             id="endereco"
             label="Endereço"
             placeholder="Rua, número, bairro, cidade"
+            value={stateModel.data.endereco}
+            onChange={e => stateModel.updateState('endereco', e.target.value)}
           />
 
           <TextArea
             id="observacao"
             label="Observação"
             helperText="anotações, necessidades"
+            value={stateModel.data.observacao}
+            onChange={e => stateModel.updateState('observacao', e.target.value)}
             placeholder="Registre informações importantes para o acompanhamento..."
           />
 

@@ -1,29 +1,150 @@
-@import "tailwindcss";
-
+@import 'tailwindcss';
 
 @theme {
-  --color-samu-bg: #EFF7F6;
-  --color-samu-text: #1F2D3A;
-  --color-samu-border: #DDE9E8;
-  --color-samu-neutral: #95A5A6;
+  --color-samu-bg: #eff7f6;
+  --color-samu-text: #1f2d3a;
+  --color-samu-border: #dde9e8;
+  --color-samu-neutral: #95a5a6;
 
   /* Azul Confiança */
-  --color-samu-primary-lighter: #E6F2FA;
-  --color-samu-primary-light: #5AA7E2;
-  --color-samu-primary: #2587D7;
-  --color-samu-primary-dark: #1B66A4;
-  --color-samu-primary-darker: #12446E;
+  --color-samu-primary-lighter: #e6f2fa;
+  --color-samu-primary-light: #5aa7e2;
+  --color-samu-primary: #2587d7;
+  --color-samu-primary-dark: #1b66a4;
+  --color-samu-primary-darker: #12446e;
 
   /* Dourado */
-  --color-samu-accent-lighter: #FFF9E6;
-  --color-samu-accent-light: #D4B05F;
-  --color-samu-accent: #C4983A;
-  --color-samu-accent-dark: #9E782B;
-  --color-samu-accent-darker: #75581F;
+  --color-samu-accent-lighter: #fff9e6;
+  --color-samu-accent-light: #d4b05f;
+  --color-samu-accent: #c4983a;
+  --color-samu-accent-dark: #9e782b;
+  --color-samu-accent-darker: #75581f;
 
   /* Funcionais */
-  --color-samu-success: #48A999;
-  --color-samu-warning: #F39C12;
-  --color-samu-danger: #D9534F;
+  --color-samu-success: #48a999;
+  --color-samu-warning: #f39c12;
+  --color-samu-danger: #d9534f;
+
+  --animate-fade-in: fade-in 0.5s ease-out forwards;
+  --animate-fade-out: fade-out 0.5s ease-out forwards;
+  --animate-scale-up: scale-up 0.5s ease-out forwards;
+  --animate-scale-down: scale-down 0.5s ease-out forwards;
+  --animate-open-menu: open-menu 0.5s ease-out forwards;
+  --animate-close-menu: close-menu 0.5s ease-out forwards;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-pulse-custom: pulse-custom 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-fade-in-up: fade-in-up 0.8s ease-out forwards;
+
+  /* ===================== */
+  /*      KEYFRAMES        */
+  /* ===================== */
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fade-out {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes scale-up {
+    0% {
+      transform: translateX(-50%) scale(0.5);
+    }
+    100% {
+      transform: translateX(-50%) scale(1);
+    }
+  }
+
+  @keyframes scale-down {
+    0% {
+      transform: translateX(-50%) scale(1);
+    }
+    100% {
+      transform: translateX(-50%) scale(0.5);
+    }
+  }
+
+  @keyframes open-menu {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes close-menu {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes float {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-custom {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    25%,
+    75% {
+      opacity: 0.8;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fade-in-up {
+    0% {
+      opacity: 0;
+      transform: translateY(80px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0px);
+    }
+  }
 }
 
+@keyframes descarregaProgress {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
+}
+
+@keyframes carregaProgress {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
