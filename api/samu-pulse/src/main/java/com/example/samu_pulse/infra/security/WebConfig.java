@@ -14,10 +14,13 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins(siteUrl
-//                        "http://" + endpointFrontMaquina, "http://" + endpointFrontMaquinaDois
+                .allowedOrigins(
+                        siteUrl,
+                        "https://samu-pulse.lat",
+                        "https://www.samu-pulse.lat"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
+                .allowedHeaders("*")
+                .allowCredentials(true);
     }
 }
