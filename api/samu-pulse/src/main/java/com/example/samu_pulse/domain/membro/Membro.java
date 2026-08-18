@@ -1,6 +1,8 @@
 package com.example.samu_pulse.domain.membro;
 
 import com.example.samu_pulse.domain.membro.dto.DadosMembroRequest;
+import com.example.samu_pulse.domain.membro.dto.DadosMembroUpdate;
+import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -44,4 +46,31 @@ public class Membro {
         this.tipo = TipoMembro.MEMBRO;
         this.ativo = true;
     }
+    public Boolean atualizaInformacoes(DadosMembroUpdate dados) {
+        boolean alterado = false;
+
+        if (!StringUtils.isBlank(dados.nome())) {
+            this.nome = dados.nome();
+            alterado = true;
+        }
+        if (!StringUtils.isBlank(dados.telefone())) {
+            this.telefone = dados.telefone();
+            alterado = true;
+        }
+        if (dados.dataNascimento() != null) {
+            this.dataNascimento = dados.dataNascimento();
+            alterado = true;
+        }
+        if (!StringUtils.isBlank(dados.endereco())) {
+            this.endereco = dados.endereco();
+            alterado = true;
+        }
+        if (!StringUtils.isBlank(dados.observacao())) {
+            this.observacao = dados.observacao();
+            alterado = true;
+        }
+
+        return alterado;
+    }
+
 }

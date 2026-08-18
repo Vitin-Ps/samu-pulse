@@ -13,7 +13,7 @@ interface EditMemberModalProps {
   onClose: () => void;
   stateModel: any;
   alterarMembro: (e: FormEvent<HTMLFormElement>) => void;
-  alterarLogo: (isDelete: boolean) => void;
+  alterarLogo: (isDelete: boolean, files?: File[]) => void;
 }
 
 export const EditMemberModal: React.FC<EditMemberModalProps> = ({
@@ -23,13 +23,20 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
   alterarMembro,
   alterarLogo,
 }) => {
-  const previewImage: string =
-    stateModel.data.imagensSelecionadas &&
-    stateModel.data.imagensSelecionadas.length > 0
-      ? URL.createObjectURL(stateModel.data.imagensSelecionadas[0])
-      : stateModel.data.membroSelecionado
-        ? `${getUrlCarregarImg()}${stateModel.data.membroSelecionado.imagemUrl}`
-        : '';
+  const [previewImage, setPreviewImage] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (
+      stateModel.data.membroSelecionado &&
+      stateModel.data.membroSelecionado.imagemUrl
+    ) {
+      const imageUrl =
+        getUrlCarregarImg() + stateModel.data.membroSelecionado.imagemUrl;
+      setPreviewImage(imageUrl);
+    } else {
+      setPreviewImage(null);
+    }
+  }, [stateModel.data.membroSelecionado]);
 
   return (
     <Modal
@@ -76,12 +83,7 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
                       type="button"
                       onClick={e => {
                         e.stopPropagation();
-                        stateModel.updateState('imagensSelecionadas', []);
-                        stateModel.updateState('membroSelecionado', {
-                          ...stateModel.data.membroSelecionado,
-                          imagemUrl: null,
-                        });
-                        alterarLogo(true); // Executa a função de exclusão de logo passando true
+                        alterarLogo(true);
                       }}
                       className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 transition-colors cursor-pointer"
                       title="Remover foto">

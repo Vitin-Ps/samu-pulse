@@ -2,10 +2,12 @@ package com.example.samu_pulse.domain.membro.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
-public record DadosMembroRequest(
+public record DadosMembroUpdate(
+        @NotNull(message = "Id não pode ser null")
         Long id,
         @NotBlank(message = "Nome não pode ser null")
         String nome,

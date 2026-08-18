@@ -9,7 +9,7 @@ export enum TipoMembro {
 }
 
 export interface Membro {
-  id?: number;
+  id: number;
   nome: string;
   telefone?: string;
   dataConversao?: string;
@@ -25,6 +25,7 @@ export interface Membro {
 }
 
 export interface MembroJson {
+  id?: number;
   nome: string;
   telefone?: string;
   dataConversao?: string;

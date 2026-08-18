@@ -35,31 +35,11 @@ export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
   prevPage,
   alterarMembro,
   alterarLogo,
+  navigate,
+  onOpenDetails,
+  onOpenEdit,
+  onClose,
 }) => {
-  const navigate = useNavigate();
-
-  const [detailsModalOpen, setDetailsModalOpen] = useState<boolean>(false);
-  const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
-
-  const onOpenDetails = (membro: Membro) => {
-    stateModel.updateState('membroSelecionado', membro);
-    setDetailsModalOpen(true);
-    document.body.style.overflow = 'hidden';
-  };
-
-  const onOpenEdit = (membro: Membro) => {
-    stateModel.updateState('membroSelecionado', membro);
-    setEditModalOpen(true);
-    document.body.style.overflow = 'hidden';
-  };
-
-  const onClose = () => {
-    setDetailsModalOpen(false);
-    setEditModalOpen(false);
-    stateModel.updateState('membroSelecionado', null);
-    document.body.style.overflow = '';
-  };
-
   return (
     <section className="min-h-screen px-4 sm:px-6 lg:px-8 py-10  w-full">
       <section
@@ -177,13 +157,13 @@ export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
       )}
 
       <MemberDetailsModal
-        isOpen={detailsModalOpen}
+        isOpen={stateModel.data.detailsModalOpen}
         onClose={onClose}
         membro={stateModel.data.membroSelecionado as Membro}
       />
 
       <EditMemberModal
-        isOpen={editModalOpen}
+        isOpen={stateModel.data.editModalOpen}
         onClose={onClose}
         stateModel={stateModel}
         alterarMembro={alterarMembro}
@@ -202,7 +182,7 @@ export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
         }
         onSave={(arquivos: any) => {
           stateModel.updateState('imagensSelecionadas', arquivos);
-          alterarLogo(false);
+          alterarLogo(false, arquivos);
         }}
       />
     </section>

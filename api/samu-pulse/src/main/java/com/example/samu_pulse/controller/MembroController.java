@@ -3,6 +3,7 @@ package com.example.samu_pulse.controller;
 import com.example.samu_pulse.domain.membro.MembroService;
 import com.example.samu_pulse.domain.membro.TipoMembro;
 import com.example.samu_pulse.domain.membro.dto.DadosMembroRequest;
+import com.example.samu_pulse.domain.membro.dto.DadosMembroUpdate;
 import com.example.samu_pulse.domain.membro.dto.MembroResponse;
 import com.example.samu_pulse.repository.MembroRepository;
 import jakarta.transaction.Transactional;
@@ -33,6 +34,15 @@ public class MembroController {
         MembroResponse newMembro = membroService.createMembro(dados);
 
         return ResponseEntity.ok(newMembro);
+    }
+
+    @PutMapping
+    @Transactional
+    public ResponseEntity<MembroResponse> updateMember(@RequestBody @Valid DadosMembroUpdate dados) {
+
+        MembroResponse membro = membroService.updateMember(dados);
+
+        return ResponseEntity.ok(membro);
     }
 
     @GetMapping

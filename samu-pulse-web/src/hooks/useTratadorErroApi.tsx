@@ -30,15 +30,18 @@ const useTratadorErroApi = () => {
     if (axios.isAxiosError(error)) {
       errorData.error = error.code || 'AXIOS_ERROR';
 
-      // Tratamento de erro com response
+      // Tratamento de erro com response (O back-end conseguiu responder)
       if (error.response && error.response.data) {
+        // Verifica erro 413 (Payload Too Large) explicitamente, caso o backend consiga enviá-lo
+        if (error.response.status === 413) {
+          errorData.message =
+            'A imagem selecionada é muito pesada. Por favor, recorte a imagem ou escolha uma menor (Limite: 5MB).';
+        }
         // Verifica se é um array de erros (validação de campos)
-        if (Array.isArray(error.response.data) && error.response.data.length > 0) {
-          // Se tem estrutura de campo/mensagem, constrói mensagem formatada
+        else if (Array.isArray(error.response.data) && error.response.data.length > 0) {
           if (error.response.data[0].campo && error.response.data[0].mensagem) {
             errorData.message = construirMensagemDeErro(error.response.data);
           } else if (error.response.data[0].mensagem) {
-            // Se tem apenas mensagem
             errorData.message = error.response.data[0].mensagem;
           } else {
             errorData.message = error.response.data.toString();
@@ -59,7 +62,7 @@ const useTratadorErroApi = () => {
           errorData.message = JSON.stringify(error.response.data);
         }
       } else if (error.response && error.response.status) {
-        // Adiciona código de status HTTP se disponível
+        // Adiciona código de status HTTP se disponível, sem mensagem no body
         if (error.response.status) {
           const status = error.response.status;
           const statusMessages: Record<number, string> = {
@@ -68,13 +71,13 @@ const useTratadorErroApi = () => {
             403: 'Acesso negado',
             404: 'Recurso não encontrado',
             409: 'Conflito',
+            413: 'Arquivo muito grande. O limite máximo foi excedido.',
             422: 'Entidade não processável',
             500: 'Erro interno do servidor',
             502: 'Bad Gateway',
             503: 'Serviço indisponível',
           };
 
-          // Se a mensagem estiver vazia, usa a mensagem do status
           if (!errorData.message) {
             errorData.message = statusMessages[status] || `Erro ${status}`;
           }
@@ -82,12 +85,25 @@ const useTratadorErroApi = () => {
           errorData.error = `${errorData.error} (${status})`;
         }
       }
-      // Erro sem response (problemas de rede/timeout)
+      // Erro sem response (problemas de rede/timeout ou CORS por causa do Tomcat 413)
       else {
-        errorData.message = 'Erro na conexão com a API. Tente novamente mais tarde';
+        console.error('Erro de conexão com a API:', error);
 
-        if (error.message) {
-          errorData.message += ` - ${error.message}`;
+        // Se for Network Error e o config do Axios envolvia multipart/form-data (upload de imagem)
+        // É quase 100% de chance de ser o Tomcat cortando a requisição por tamanho.
+        const isUploadRequest = error.config?.headers?.['Content-Type']
+          ?.toString()
+          .includes('multipart/form-data');
+
+        if (error.message === 'Network Error' && isUploadRequest) {
+          errorData.message =
+            'Erro ao enviar a imagem. Ela pode ser muito grande ou pesada. Tente recortá-la antes de salvar.';
+        } else {
+          errorData.message =
+            'Erro na conexão com a API. Verifique sua internet ou tente novamente.';
+          if (error.message) {
+            errorData.message += ` (${error.message})`;
+          }
         }
       }
     }

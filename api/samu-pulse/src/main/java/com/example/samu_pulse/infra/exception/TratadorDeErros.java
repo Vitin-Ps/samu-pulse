@@ -8,6 +8,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+
 import java.nio.file.AccessDeniedException;
 
 @RestControllerAdvice
@@ -68,6 +70,14 @@ public class TratadorDeErros {
 //        return ResponseEntity.status(HttpStatus.CONFLICT)
 //                .body(FuncionalidadesService.extrairChaveDuplicada(ex.getRootCause().getMessage()));
 //    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<String> tratarErroTamanhoArquivo(MaxUploadSizeExceededException ex) {
+        // Retorna o status 413 (Payload Too Large) com uma mensagem amigável
+        return ResponseEntity
+                .status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body("O arquivo enviado é muito grande. Por favor, envie uma imagem menor que 5MB.");
+    }
 
     public record DadosErroValidacao(String campo, String mensagem) {
         public DadosErroValidacao(FieldError erro) {

@@ -1,11 +1,13 @@
 package com.example.samu_pulse.domain.membro;
 
 import com.example.samu_pulse.domain.membro.dto.DadosMembroRequest;
+import com.example.samu_pulse.domain.membro.dto.DadosMembroUpdate;
 import com.example.samu_pulse.domain.membro.dto.MembroResponse;
 import com.example.samu_pulse.infra.FuncionalidadesService;
 import com.example.samu_pulse.infra.exception.ApiException;
 import com.example.samu_pulse.infra.file.ArquivoService;
 import com.example.samu_pulse.repository.MembroRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -100,4 +102,12 @@ public class MembroService {
         membro.setImagemUrl(null);
     }
 
+    public MembroResponse updateMember(@Valid DadosMembroUpdate dados) {
+        Membro membro = membroRepository.getReferenceByIdAndAtivoTrue(dados.id());
+        if (membro == null) throw new ApiException("Membro não existe!");
+
+        membro.atualizaInformacoes(dados);
+
+        return new MembroResponse(membro);
+    }
 }
