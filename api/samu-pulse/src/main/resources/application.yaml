@@ -44,6 +44,9 @@ spring:
       expiration-ms: ${JWT_EXPIRATION_MS:86400000}
     debug-errors: ${DEBUG_ERRORS:false}
 
+  senha:
+    first-acesso: ${SENHA_FIRST_ACESSO:123456}
+
   app:
 #    mail:
 #      from: ${MAIL_FROM}
