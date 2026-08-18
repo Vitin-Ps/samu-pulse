@@ -1,0 +1,61 @@
+package com.example.samu_pulse.infra.security;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.example.samu_pulse.domain.usuario.Usuario;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
+@Service
+public class TokenService {
+    @Value("${spring.security.jwt.secret}")
+    private String secret;
+
+    public String gerarToken(Usuario usuario) {
+        try {
+            var algoritmo = Algorithm.HMAC256(secret);
+            return JWT.create()
+                    .withIssuer("Barbearia_api")
+                    .withSubject(usuario.getLogin())
+                    .withClaim("role", String.valueOf(usuario.getTipoUsuario()))
+                    .withClaim("id", usuario.getId())
+                    .withExpiresAt(dataExpiracao())
+                    .sign(algoritmo);
+        } catch (JWTCreationException exception) {
+            throw new RuntimeException("Erro ao gerar Token JWT: " + exception);
+        }
+    }
+
+    public String validaToken(String tokenJWT) {
+        try {
+            Algorithm algoritmo = Algorithm.HMAC256(secret);
+            return JWT.require(algoritmo)
+                    .withIssuer("Barbearia_api")
+                    .build()
+                    .verify(tokenJWT)
+                    .getSubject();
+        } catch (JWTVerificationException exception) {
+            throw new RuntimeException("Token Inválido ou Expirado: " + exception);
+        }
+    }
+
+    public DecodedJWT extractAllClaims(String tokenJWT) {
+        try {
+            return JWT.decode(tokenJWT);
+        } catch (JWTDecodeException exception) {
+            throw new RuntimeException("Erro ao decodificar o token JWT: " + exception.getMessage(), exception);
+        }
+    }
+
+    private Instant dataExpiracao() {
+        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+    }
+}

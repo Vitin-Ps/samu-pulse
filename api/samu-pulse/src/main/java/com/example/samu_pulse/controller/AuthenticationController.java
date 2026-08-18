@@ -16,20 +16,20 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("user")
-public class UsuarioController {
+@RequestMapping("auth")
+public class AuthenticationController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
 
-    @PostMapping
-    @Transactional
-    public ResponseEntity<UsuarioResponse> createUser(@RequestBody @Valid DadosUsuarioRequest dados) {
-        Usuario usuario = new Usuario(dados);
-
-        usuario = usuarioRepository.save(usuario);
-        return ResponseEntity.ok(new UsuarioResponse(usuario));
-    }
+//    @PostMapping
+//    @Transactional
+//    public ResponseEntity<UsuarioResponse> createUser(@RequestBody @Valid DadosUsuarioRequest dados) {
+//        Usuario usuario = new Usuario(dados);
+//
+//        usuario = usuarioRepository.save(usuario);
+//        return ResponseEntity.ok(new UsuarioResponse(usuario));
+//    }
 
     @GetMapping
     public ResponseEntity<Page<UsuarioResponse>> listUsers(@PageableDefault(size = 10, page = 0, sort = {"login"}) Pageable pageable) {
