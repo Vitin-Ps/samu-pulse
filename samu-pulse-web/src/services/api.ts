@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export function getBaseUrl() {
-  return import.meta.env.REACT_APP_API;
+  return import.meta.env.VITE_API;
 }
 
 const api = axios.create({

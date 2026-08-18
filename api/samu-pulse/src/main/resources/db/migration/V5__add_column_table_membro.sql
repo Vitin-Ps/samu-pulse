@@ -1,0 +1,1 @@
+ALTER TABLE membro ADD COLUMN imagem_url VARCHAR(255) NULL;

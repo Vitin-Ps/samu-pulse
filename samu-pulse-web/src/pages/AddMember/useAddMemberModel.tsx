@@ -2,14 +2,17 @@ import {FormEvent} from 'react';
 import {useMembro, useStateData} from '../../hooks';
 import {useFunctionsProvider} from '../../contexts/FunctionsProvider';
 import {MessageService} from '../../services';
-import {extrairNumeros} from '../../services/Extra/FuncionalidadesService';
+import {
+  extrairNumeros,
+  formatDateOfPattern,
+} from '../../services/Extra/FuncionalidadesService';
 import {useNavigate} from 'react-router-dom';
 import {MembroJson} from '../../interfaces/Membro';
 
 interface AddMemberModelProps {}
 
 export const useAddMemberModel = ({}: AddMemberModelProps) => {
-  const {cadastrarMembro} = useMembro();
+  const {cadastrarMembro, alterarLogoMembro} = useMembro();
   const {setLoading} = useFunctionsProvider();
   const navigate = useNavigate();
 
@@ -19,12 +22,16 @@ export const useAddMemberModel = ({}: AddMemberModelProps) => {
     endereco?: string;
     observacao?: string;
     dataNascimento?: string;
+    isCropModalOpen: boolean;
+    imagensSelecionadas: File[];
   }>({
     nome: '',
     telefone: '',
     endereco: '',
     observacao: '',
     dataNascimento: '',
+    isCropModalOpen: false,
+    imagensSelecionadas: [],
   });
 
   const salvarMembro = async (e: FormEvent<HTMLFormElement>) => {
@@ -41,7 +48,7 @@ export const useAddMemberModel = ({}: AddMemberModelProps) => {
       nome: stateModel.data.nome,
       telefone: extrairNumeros(stateModel.data.telefone || ''),
       dataNascimento: stateModel.data.dataNascimento
-        ? stateModel.data.dataNascimento
+        ? formatDateOfPattern(stateModel.data.dataNascimento, 'DD/MM/YYYY')
         : undefined,
       endereco: stateModel.data.endereco,
       observacao: stateModel.data.observacao,
@@ -49,6 +56,19 @@ export const useAddMemberModel = ({}: AddMemberModelProps) => {
 
     try {
       const resCadastro = await cadastrarMembro(novoMembro);
+
+      if (stateModel.data.imagensSelecionadas.length > 0) {
+        const atualizarLogo = await alterarLogoMembro(
+          stateModel.data.imagensSelecionadas[0],
+          resCadastro.id,
+        );
+
+        if (!atualizarLogo) {
+          MessageService.alertMessage(
+            'Membro cadastrado, mas houve um erro ao enviar a imagem. Tente novamente.',
+          );
+        }
+      }
 
       if (resCadastro) {
         MessageService.alertMessage(

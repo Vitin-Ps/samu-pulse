@@ -1,12 +1,19 @@
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {
-  faHeartPulse,
   faUserPlus,
   faArrowLeft,
   faCheck,
+  faCamera,
+  faTrash,
 } from '@fortawesome/free-solid-svg-icons';
 import {useNavigate} from 'react-router-dom';
-import {Button, Input, TextArea} from '../components/Elements';
+import {
+  AspectRatio,
+  Button,
+  ImageCropModal,
+  Input,
+  TextArea,
+} from '../components/Elements';
 import {FC} from 'react';
 import {useAddMemberModel} from './useAddMemberModel';
 import {formatarNumero} from '../../services/Extra/FuncionalidadesService';
@@ -17,6 +24,11 @@ export const AddMemberView: FC<ReturnType<typeof useAddMemberModel>> = ({
 }) => {
   const navigate = useNavigate();
 
+  const previewImage =
+    stateModel.data.imagensSelecionadas.length > 0
+      ? URL.createObjectURL(stateModel.data.imagensSelecionadas[0])
+      : null;
+
   return (
     <main className="grow flex items-start justify-center px-4 pb-16 pt-10 w-full">
       <div className="w-full max-w-150 bg-white rounded-3xl shadow-sm border border-samu-border overflow-hidden">
@@ -25,7 +37,7 @@ export const AddMemberView: FC<ReturnType<typeof useAddMemberModel>> = ({
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-samu-neutral hover:text-samu-primary transition-colors text-sm font-medium cursor-pointer mb-5">
             <FontAwesomeIcon icon={faArrowLeft} className="text-xs" />
-            Voltar ao início
+            Voltar
           </button>
 
           <div className="flex items-start justify-between">
@@ -42,6 +54,47 @@ export const AddMemberView: FC<ReturnType<typeof useAddMemberModel>> = ({
 
         {/* Formulário com Componentes Reutilizáveis */}
         <form className="px-8 py-8" onSubmit={salvarMembro}>
+          {/* === CAMPO DE FOTO (1:1 / Square) === */}
+          <div className="flex flex-col items-center mb-6">
+            <label className="block text-sm font-medium text-samu-text mb-3 self-start">
+              Foto do Membro
+            </label>
+            <div className="relative group">
+              <div
+                onClick={() => stateModel.updateState('isCropModalOpen', true)}
+                className="w-28 h-28 rounded-full border-2 border-dashed border-samu-border bg-samu-bg/50 flex items-center justify-center overflow-hidden cursor-pointer hover:border-samu-primary transition-all shadow-inner">
+                {previewImage ? (
+                  <img
+                    src={previewImage}
+                    alt="Foto do Membro"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center text-samu-neutral">
+                    <FontAwesomeIcon icon={faCamera} className="text-2xl mb-1" />
+                    <span className="text-[11px] font-medium">Adicionar</span>
+                  </div>
+                )}
+              </div>
+
+              {previewImage && (
+                <button
+                  type="button"
+                  onClick={e => {
+                    e.stopPropagation();
+                    stateModel.updateState('imagensSelecionadas', []);
+                  }}
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                  title="Remover foto">
+                  <FontAwesomeIcon icon={faTrash} className="text-xs" />
+                </button>
+              )}
+            </div>
+            <span className="text-xs text-samu-neutral mt-2">
+              Clique na foto para recortar (Proporção 1:1)
+            </span>
+          </div>
+
           <Input
             id="nome"
             label="Nome Completo"
@@ -107,6 +160,21 @@ export const AddMemberView: FC<ReturnType<typeof useAddMemberModel>> = ({
           </div>
         </form>
       </div>
+
+      <ImageCropModal
+        isOpen={stateModel.data.isCropModalOpen}
+        onClose={() => stateModel.updateState('isCropModalOpen', false)}
+        limit={1}
+        aspect={AspectRatio.SQUARE}
+        mandatoryAspect={true}
+        imagensSelecionadas={stateModel.data.imagensSelecionadas}
+        setImagensSelecionadas={(arquivos: File[]) =>
+          stateModel.updateState('imagensSelecionadas', arquivos)
+        }
+        onSave={(arquivos: any) => {
+          stateModel.updateState('imagensSelecionadas', arquivos);
+        }}
+      />
     </main>
   );
 };

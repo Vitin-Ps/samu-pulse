@@ -1,5 +1,5 @@
 import {RouteObject} from 'react-router-dom';
-import {Home, ErrorPage, AddMemberPage} from './pages';
+import {Home, ErrorPage, AddMemberPage, ListMembersPage} from './pages';
 import App from './App';
 
 export const routes: RouteObject[] = [
@@ -15,6 +15,10 @@ export const routes: RouteObject[] = [
       {
         path: 'add-member',
         element: <AddMemberPage />,
+      },
+      {
+        path: 'list-members',
+        element: <ListMembersPage />,
       },
     ],
   },

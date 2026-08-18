@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 export const gerarUUID = () => {
   // Gera uma string com 16 bytes aleatórios
@@ -174,6 +174,31 @@ export function converterMoedaReal(
   else return undefined;
 }
 
-export const formatDateOfPattern = (date: Date, pattern: string): string => {
+export const formatDateOfPattern = (
+  date: Date | string | undefined,
+  pattern: string,
+): string => {
+  if (!date) return '-';
   return dayjs(date).format(pattern);
+};
+
+export const replaceSpaceWithCharacter = (text: string, character: string) => {
+  return text.replace(/ /g, character);
+};
+
+export const truncateFileName = (name: string, maxLength: number = 50): string => {
+  if (name.length <= maxLength) return name;
+  const lastDotIndex = name.lastIndexOf('.');
+  const ext = lastDotIndex > 0 ? name.substring(lastDotIndex) : '';
+  const nameWithoutExt = lastDotIndex > 0 ? name.substring(0, lastDotIndex) : name;
+  const maxNameLength = maxLength - 3 - ext.length;
+  const truncatedName =
+    nameWithoutExt.length > maxNameLength
+      ? nameWithoutExt.substring(0, maxNameLength)
+      : nameWithoutExt;
+  return truncatedName + '...' + ext;
+};
+
+export const getUrlCarregarImg = (): string => {
+  return `${import.meta.env.VITE_API}/arquivos/`;
 };

@@ -19,6 +19,7 @@ export interface Membro {
   observacao?: string;
   dataUltimoContato?: string;
   dataNascimento?: string;
+  imagemUrl?: string;
   tipo: TipoMembro;
   ativo: boolean;
 }
