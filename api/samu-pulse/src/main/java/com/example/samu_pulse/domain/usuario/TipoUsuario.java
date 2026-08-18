@@ -5,7 +5,8 @@ import lombok.Getter;
 @Getter
 public enum TipoUsuario {
     ADMIN("ADMIN"),
-    LIDER("LIDER");
+    LIDER("LIDER"),
+    USER("USER");
 
     private final String tipoUsuario;
 

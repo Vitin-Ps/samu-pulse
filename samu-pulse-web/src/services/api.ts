@@ -1,4 +1,5 @@
 import axios from 'axios';
+import TokenService from './TokenService';
 
 export function getBaseUrl() {
   return import.meta.env.VITE_API;
@@ -10,25 +11,21 @@ const api = axios.create({
 
 api.interceptors.request.use(
   async config => {
-    // try {
-    //   config.headers['bypass-tunnel-reminder'] = 'true';
+    try {
+      config.headers['bypass-tunnel-reminder'] = 'true';
 
-    //   const token = TokenService.getToken();
-    //   if (token) {
-    //     const isValid = TokenService.validadeToken(token);
-    //     if (isValid) {
-    //       config.headers.Authorization = `Bearer ${token}`;
-    //     } else {
-    //       TokenService.removeToken();
-    //     }
-    //   }
-    //     } catch (error) {
-    //       console.error('Error retrieving token:', error);
-    //     }
-    //     return config;
-    //   },
-    //   (error) => {
-    //     return Promise.reject(error);
+      const token = TokenService.getToken();
+      if (token) {
+        const isValid = TokenService.validadeToken(token);
+        if (isValid) {
+          config.headers.Authorization = `Bearer ${token}`;
+        } else {
+          TokenService.removeToken();
+        }
+      }
+    } catch (error) {
+      console.error('Error retrieving token:', error);
+    }
     return config;
   },
   error => {

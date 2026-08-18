@@ -1,9 +1,24 @@
-import {faHeartPulse} from '@fortawesome/free-solid-svg-icons';
+import React, {useContext, useState} from 'react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {
+  faHeartPulse,
+  faUser,
+  faRightFromBracket,
+} from '@fortawesome/free-solid-svg-icons';
 import {useNavigate} from 'react-router-dom';
+import {AuthContext} from '../Auth/AuthContext';
 
 export const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+  const auth = useContext(AuthContext);
+
+  const handleLogout = () => {
+    setIsMenuOpen(false);
+    auth.signout();
+    navigate('/auth/sign-in');
+  };
 
   return (
     <header
@@ -21,15 +36,27 @@ export const Header = () => {
         </span>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 relative">
         <span className="text-samu-neutral font-medium hidden sm:block">
-          Olá, Pastor Silva
+          Olá, Tudo bem?
         </span>
-        <img
-          src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg"
-          alt="Profile"
-          className="w-11 h-11 rounded-full border-2 border-white shadow-sm object-cover"
-        />
+
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="w-11 h-11 rounded-full bg-samu-bg text-samu-primary border-2 border-white shadow-sm flex items-center justify-center hover:bg-samu-border/50 transition-colors cursor-pointer outline-none">
+          <FontAwesomeIcon icon={faUser} className="text-lg" />
+        </button>
+
+        {isMenuOpen && (
+          <div className="absolute top-14 right-0 w-36 bg-white border border-samu-border rounded-xl shadow-card z-50 overflow-hidden py-1">
+            <button
+              onClick={handleLogout}
+              className="w-full text-left px-4 py-2.5 text-sm text-samu-danger hover:bg-samu-bg transition-colors flex items-center gap-2 cursor-pointer">
+              <FontAwesomeIcon icon={faRightFromBracket} />
+              Sair
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
