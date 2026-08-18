@@ -76,7 +76,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2.5">
+      <div className="grid grid-rows-2 grid-cols-2 gap-2.5">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-samu-bg flex items-center justify-center shrink-0">
             <FontAwesomeIcon icon={faPhone} className="text-samu-primary text-xs" />
@@ -98,7 +98,6 @@ export const MemberCard: React.FC<MemberCardProps> = ({
           </span>
         </div>
 
-        {/* Exemplo de uso dentro do Card */}
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-samu-bg flex items-center justify-center shrink-0">
             <FontAwesomeIcon
