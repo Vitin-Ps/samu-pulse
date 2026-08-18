@@ -1,7 +1,7 @@
 import {useEffect, FormEvent} from 'react';
 import {useMembro, useStateData} from '../../hooks';
 import {useFunctionsProvider} from '../../contexts/FunctionsProvider';
-import {Membro, MembroJson} from '../../interfaces/Membro';
+import {Membro, MembroJson, StatusMembro} from '../../interfaces/Membro';
 import {Response} from '../../interfaces/Pageable';
 import {MessageService} from '../../services';
 import {
@@ -9,6 +9,7 @@ import {
   formatDateOfPattern,
 } from '../../services/Extra/FuncionalidadesService';
 import {useNavigate} from 'react-router-dom';
+import {OptionWithIcon} from '../components/Elements/SelectWithElement';
 
 export interface ListMembersStateModel {
   membros: Membro[];
@@ -23,6 +24,13 @@ export interface ListMembersStateModel {
   detailsModalOpen: boolean;
   editModalOpen: boolean;
 }
+
+export const statusMembroOptions: OptionWithIcon[] = [
+  {value: StatusMembro.ATIVO, text: 'Ativo'},
+  {value: StatusMembro.DISTANTE, text: 'Distante'},
+  {value: StatusMembro.AFASTADO, text: 'Afastado'},
+  {value: StatusMembro.OUTRA_IGREJA, text: 'Outra Igreja'},
+];
 
 export const useListMembersModel = () => {
   const {listarPageMembros, alterarLogoMembro, atualizarMembro, delImgMembro} =
@@ -138,6 +146,7 @@ export const useListMembersModel = () => {
         : undefined,
       endereco: stateModel.data.membroSelecionado?.endereco || '',
       observacao: stateModel.data.membroSelecionado?.observacao || '',
+      status: stateModel.data.membroSelecionado?.status || StatusMembro.ATIVO,
     };
 
     try {

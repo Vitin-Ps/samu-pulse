@@ -8,6 +8,13 @@ export enum TipoMembro {
   NOVO_CONVERTIDO = 'NOVO_CONVERTIDO',
 }
 
+export enum StatusMembro {
+  DISTANTE = 'DISTANTE',
+  ATIVO = 'ATIVO',
+  AFASTADO = 'AFASTADO',
+  OUTRA_IGREJA = 'OUTRA_IGREJA',
+}
+
 export interface Membro {
   id: number;
   nome: string;
@@ -20,13 +27,14 @@ export interface Membro {
   dataUltimoContato?: string;
   dataNascimento?: string;
   imagemUrl?: string;
-  tipo: TipoMembro;
-  ativo: boolean;
+  status: StatusMembro;
+  tipo: TipoMembro; 
 }
 
 export interface MembroJson {
   id?: number;
   nome: string;
+  status: StatusMembro;
   telefone?: string;
   dataConversao?: string;
   tipoConversao?: TipoConversao;

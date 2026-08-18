@@ -31,10 +31,11 @@ public class Membro {
     private LocalDateTime dataUltimoContato;
     @Enumerated(EnumType.STRING)
     private TipoMembro tipo;
+    @Enumerated(EnumType.STRING)
+    private StatusMembro status;
     @Setter
     private String imagemUrl;
     private Boolean ativo = true;
-
 
 
     public Membro(DadosMembroRequest dados) {
@@ -44,8 +45,10 @@ public class Membro {
         this.endereco = dados.endereco();
         this.observacao = dados.observacao();
         this.tipo = TipoMembro.MEMBRO;
+        this.status = dados.status();
         this.ativo = true;
     }
+
     public Boolean atualizaInformacoes(DadosMembroUpdate dados) {
         boolean alterado = false;
 
@@ -69,6 +72,8 @@ public class Membro {
             this.observacao = dados.observacao();
             alterado = true;
         }
+
+        this.status = dados.status();
 
         return alterado;
     }

@@ -17,6 +17,8 @@ import {
 import {FC} from 'react';
 import {useAddMemberModel} from './useAddMemberModel';
 import {formatarNumero} from '../../services/Extra/FuncionalidadesService';
+import SelectWithElement from '../components/Elements/SelectWithElement';
+import {statusMembroOptions} from '../ListMembers/useListMembersModel';
 
 export const AddMemberView: FC<ReturnType<typeof useAddMemberModel>> = ({
   stateModel,
@@ -53,7 +55,7 @@ export const AddMemberView: FC<ReturnType<typeof useAddMemberModel>> = ({
         </div>
 
         {/* Formulário com Componentes Reutilizáveis */}
-        <form className="px-8 py-8" onSubmit={salvarMembro}>
+        <form className="px-8 py-8 flex flex-col gap-4" onSubmit={salvarMembro}>
           {/* === CAMPO DE FOTO (1:1 / Square) === */}
           <div className="flex flex-col items-center mb-6">
             <label className="block text-sm font-medium text-samu-text mb-3 self-start">
@@ -124,6 +126,15 @@ export const AddMemberView: FC<ReturnType<typeof useAddMemberModel>> = ({
               onChange={e => stateModel.updateState('dataNascimento', e.target.value)}
             />
           </div>
+
+          <SelectWithElement
+            label="Status do Membro"
+            placeholder="Selecione o status"
+            data={statusMembroOptions}
+            valor={stateModel.data.status}
+            setValor={novoStatus => stateModel.updateState('status', novoStatus)}
+            obrigatorio={true}
+          />
 
           <Input
             id="endereco"

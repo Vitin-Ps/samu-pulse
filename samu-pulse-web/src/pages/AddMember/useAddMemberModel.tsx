@@ -7,7 +7,8 @@ import {
   formatDateOfPattern,
 } from '../../services/Extra/FuncionalidadesService';
 import {useNavigate} from 'react-router-dom';
-import {MembroJson} from '../../interfaces/Membro';
+import {MembroJson, StatusMembro} from '../../interfaces/Membro';
+import {OptionWithIcon} from '../components/Elements/SelectWithElement';
 
 interface AddMemberModelProps {}
 
@@ -24,6 +25,7 @@ export const useAddMemberModel = ({}: AddMemberModelProps) => {
     dataNascimento?: string;
     isCropModalOpen: boolean;
     imagensSelecionadas: File[];
+    status: StatusMembro;
   }>({
     nome: '',
     telefone: '',
@@ -32,6 +34,7 @@ export const useAddMemberModel = ({}: AddMemberModelProps) => {
     dataNascimento: '',
     isCropModalOpen: false,
     imagensSelecionadas: [],
+    status: StatusMembro.ATIVO,
   });
 
   const salvarMembro = async (e: FormEvent<HTMLFormElement>) => {
@@ -52,10 +55,15 @@ export const useAddMemberModel = ({}: AddMemberModelProps) => {
         : undefined,
       endereco: stateModel.data.endereco,
       observacao: stateModel.data.observacao,
+      status: stateModel.data.status,
     };
 
     try {
       const resCadastro = await cadastrarMembro(novoMembro);
+
+      if (!resCadastro) {
+        return;
+      }
 
       if (stateModel.data.imagensSelecionadas.length > 0) {
         const atualizarLogo = await alterarLogoMembro(
