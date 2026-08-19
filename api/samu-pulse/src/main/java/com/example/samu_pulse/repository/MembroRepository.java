@@ -1,6 +1,7 @@
 package com.example.samu_pulse.repository;
 
 import com.example.samu_pulse.domain.membro.Membro;
+import com.example.samu_pulse.domain.membro.StatusMembro;
 import com.example.samu_pulse.domain.membro.TipoMembro;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +24,13 @@ public interface MembroRepository extends JpaRepository<Membro, Integer> {
                 )
                 AND (CAST(:dataNascimento AS DATE) IS NULL OR m.data_nascimento = :dataNascimento)
                 AND (CAST(:#{#tipoMembro?.name()} AS VARCHAR) IS NULL OR m.tipo = CAST(:#{#tipoMembro?.name()} AS VARCHAR))
+                AND (CAST(:#{#statusMembro?.name()} AS VARCHAR) IS NULL OR m.status = CAST(:#{#statusMembro?.name()} AS VARCHAR))
                 AND m.ativo = :ativo
             """, nativeQuery = true)
     Page<Membro> searchAllMembers(@Param("search") String search,
                                   @Param("dataNascimento") LocalDate dataNascimento,
                                   @Param("tipoMembro") TipoMembro tipoMembro,
+                                  @Param("statusMembro") StatusMembro statusMembro,
                                   @Param("ativo") Boolean ativo,
                                   Pageable pageable);
 

@@ -200,5 +200,5 @@ export const truncateFileName = (name: string, maxLength: number = 50): string =
 };
 
 export const getUrlCarregarImg = (): string => {
-  return `${import.meta.env.VITE_API}/arquivos/`;
+  return `${import.meta.env.VITE_API}/api/arquivos/`;
 };
