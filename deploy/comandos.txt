@@ -1,0 +1,41 @@
+- entrar e configurar vps:
+
+ssh root@IP_DA_SUA_VPS
+
+curl -fsSL https://get.docker.com | bash
+
+mkdir -p /home/app/samu-pulse-uploads
+
+cd /home/app
+
+mkdir api
+mkdir web
+
+mkdir -p web
+chmod 777 web
+
+# Garante que a pasta api existe e tem permissão total
+mkdir -p api
+chmod 777 api
+
+# Cria a pasta de uploads (se ainda não tiver criado)
+mkdir -p samu-pulse-uploads
+chmod 777 samu-pulse-uploads
+
+- cria chave e cadastrar na vps para n precisar de senha:
+
+ssh-keygen -t rsa -b 4096
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@IP_DA_SUA_VPS
+
+
+- executar bash:
+
+bash deploy/deploy.sh
+
+
+bash deploy/deploy-curto.sh
+
+
+
+cd /home/app
+docker compose logs -f api

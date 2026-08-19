@@ -1,0 +1,9 @@
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' samu-pulse-api
+
+curl -X POST "http://ip_container:8080/end-point" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "login": "",
+    "senha": ""
+    
+  }'

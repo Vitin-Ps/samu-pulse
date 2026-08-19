@@ -52,3 +52,8 @@ Thumbs.db
 ### Local Docs (nao commitar) ###
 docs/
 
+deploy/deploy.sh
+deploy/deploy-curto.sh
+deploy/docker-compose.yml
+deploy/fazer_requisicao.txt
+

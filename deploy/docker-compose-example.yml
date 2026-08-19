@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # 1. Banco de Dados PostgreSQL
+  db:
+    image: postgres:15
+    container_name: meuapp-db
+    restart: always
+    environment:
+      POSTGRES_USER: db_usuario_exemplo
+      POSTGRES_PASSWORD: senha_segura_exemplo_123
+      POSTGRES_DB: db_nome_exemplo
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  # 2. API Spring Boot ou Backend
+  api:
+    build: ./api
+    container_name: meuapp-api
+    restart: always
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/db_nome_exemplo
+      - SPRING_DATASOURCE_USERNAME=db_usuario_exemplo
+      - SPRING_DATASOURCE_PASSWORD=senha_segura_exemplo_123
+      - JWT_SECRET=sua_chave_secreta_jwt_ficticia_abc123xyz789
+      - JWT_EXPIRATION_MS=86400000
+      - SITE_URL=https://meu-dominio-exemplo.com
+      - SERVER_PORT=8080
+      - DEBUG_ERRORS=false    
+      - SENHA_FIRST_ACESSO=123456    
+    volumes:
+      - /var/www/meuapp-uploads:/app/uploads
+    depends_on:
+      - db
+
+  # 3. Frontend (React / Vite / Nginx)
+  web:
+    build: ./web
+    container_name: meuapp-web
+    restart: always
+
+  # 4. Caddy (Proxy Reverso + SSL Automático)
+  caddy:
+    image: caddy:latest
+    container_name: meuapp-caddy
+    restart: always
+    ports:
+      - "80:80"   # Porta HTTP
+      - "443:443" # Porta HTTPS (Segura)
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - api
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:
