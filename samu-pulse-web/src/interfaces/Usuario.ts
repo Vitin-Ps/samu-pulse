@@ -16,3 +16,8 @@ export interface UsuarioAlteracaoJson {
   login?: string;
   perfilResponsavel?: string;
 }
+
+export interface PerfilUsuario {
+  nomeExibicao: string | null;
+  perfilResponsavel: string;
+}

@@ -1,4 +1,4 @@
-import {Usuario} from '../interfaces/Usuario';
+import {PerfilUsuario, Usuario} from '../interfaces/Usuario';
 import api from './api';
 
 export interface DadosRecuperaSenha {
@@ -48,6 +48,16 @@ export const getUserDefinidoStorage = (): Usuario | null => {
 
 // Classe para métodos de API
 class AuthService {
+  async consultarPerfil() {
+    const resposta = await api.get<PerfilUsuario>('/auth/perfil');
+    return resposta.data;
+  }
+
+  async atualizarPerfil(nomeExibicao: string) {
+    const resposta = await api.put<PerfilUsuario>('/auth/perfil', {nomeExibicao});
+    return resposta.data;
+  }
+
   async fazerLogin(login: string, senha: string) {
     if (!login || !senha) {
       return {

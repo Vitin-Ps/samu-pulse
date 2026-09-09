@@ -38,6 +38,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "spring.datasource.username=${SAMU_TEST_DB_USERNAME:postgres}",
         "spring.datasource.password=${SAMU_TEST_DB_PASSWORD:}",
         "SITE_URL=http://localhost:5173",
+        "spring.senha.first-acesso=chave-de-teste",
+        "spring.jpa.show-sql=false",
         "file.upload-dir=target/test-uploads"
 })
 @Transactional
@@ -105,12 +107,16 @@ class MembroMensagensIntegrationTests {
         mvc.perform(post(base()).header("Authorization", token(remetente))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"mensagem\":\"Contato realizado\",\"idUsuario\":" + admin.getId()
-                                + ",\"perfilResponsavel\":\"forjado\",\"dataRegistro\":\"2000-01-01T00:00:00\"}"))
+                                + ",\"nomeExibicao\":\"Forjado\",\"podeAlterar\":false,\"perfilResponsavel\":\"forjado\","
+                                + "\"dataAlteracao\":\"2000-01-01T00:00:00\",\"dataRegistro\":\"2000-01-01T00:00:00\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.idUsuario").value(remetente.getId()))
+                .andExpect(jsonPath("$.idUsuario").doesNotExist())
                 .andExpect(jsonPath("$.perfilResponsavel").value("Perfil remetente"))
-                .andExpect(jsonPath("$.usuario.login").value("remetente"))
-                .andExpect(jsonPath("$.usuario.senha").doesNotExist())
+                .andExpect(jsonPath("$.usuario").doesNotExist())
+                .andExpect(jsonPath("$.login").doesNotExist())
+                .andExpect(jsonPath("$.nomeExibicao").value("Maria Souza"))
+                .andExpect(jsonPath("$.podeAlterar").value(true))
+                .andExpect(jsonPath("$.dataAlteracao").isEmpty())
                 .andExpect(jsonPath("$.dataRegistro").isNotEmpty());
         entityManager.flush();
         entityManager.clear();
@@ -118,7 +124,14 @@ class MembroMensagensIntegrationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].mensagem").value("Contato realizado"))
                 .andExpect(jsonPath("$.content[0].idMembro").value(membro.getId()))
-                .andExpect(jsonPath("$.content[0].idUsuario").value(remetente.getId()));
+                .andExpect(jsonPath("$.content[0].nomeExibicao").value("Maria Souza"))
+                .andExpect(jsonPath("$.content[0].podeAlterar").value(false))
+                .andExpect(jsonPath("$.content[0].idUsuario").doesNotExist())
+                .andExpect(jsonPath("$.content[0].usuario").doesNotExist());
+        var persistida = mensagens.findAll().get(0);
+        assertThat(persistida.getUsuario().getId()).isEqualTo(remetente.getId());
+        assertThat(persistida.getDataRegistro()).isAfter(java.time.LocalDateTime.of(2000, 1, 1, 0, 0));
+        assertThat(persistida.getDataAlteracao()).isNull();
     }
 
     @Test
@@ -126,14 +139,30 @@ class MembroMensagensIntegrationTests {
         HistoricoMensagem historico = mensagem();
         var data = historico.getDataRegistro();
         mvc.perform(put(base() + "/" + historico.getId()).header("Authorization", token(autor))
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"mensagem\":\"Atualizada\"}"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.mensagem").value("Atualizada"));
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"mensagem\":\"Atualizada\",\"idUsuario\":" + admin.getId()
+                                + ",\"idMembro\":2147483647,\"perfilResponsavel\":\"forjado\",\"nomeExibicao\":\"Forjado\","
+                                + "\"dataRegistro\":\"2000-01-01T00:00:00\",\"dataAlteracao\":\"2000-01-01T00:00:00\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.mensagem").value("Atualizada"))
+                .andExpect(jsonPath("$.dataAlteracao").isNotEmpty())
+                .andExpect(jsonPath("$.podeAlterar").value(true));
         entityManager.flush();
         entityManager.clear();
         var atualizada = mensagens.findById(historico.getId()).orElseThrow();
         assertThat(atualizada.getMensagem()).isEqualTo("Atualizada");
         assertThat(atualizada.getUsuario().getId()).isEqualTo(autor.getId());
         // PostgreSQL armazena TIMESTAMP com precisão de microssegundos.
+        assertThat(atualizada.getDataRegistro()).isEqualTo(data);
+        assertThat(atualizada.getDataAlteracao()).isAfterOrEqualTo(data);
+        assertThat(atualizada.getMembro().getId()).isEqualTo(membro.getId());
+        assertThat(atualizada.getPerfilResponsavel()).isEqualTo("Perfil autor");
+        var primeiraAlteracao = atualizada.getDataAlteracao();
+        mvc.perform(put(base() + "/" + historico.getId()).header("Authorization", token(autor))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"mensagem\":\"Segunda alteração\"}"))
+                .andExpect(status().isOk());
+        entityManager.flush();
+        entityManager.clear();
+        atualizada = mensagens.findById(historico.getId()).orElseThrow();
+        assertThat(atualizada.getDataAlteracao()).isAfter(primeiraAlteracao);
         assertThat(atualizada.getDataRegistro()).isEqualTo(data);
         mvc.perform(delete(base() + "/" + historico.getId()).header("Authorization", token(autor)))
                 .andExpect(status().isNoContent());
@@ -149,7 +178,8 @@ class MembroMensagensIntegrationTests {
         HistoricoMensagem historico = mensagem();
         String token = token(usuario("outro", tipo));
         mvc.perform(get(base()).header("Authorization", token))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.content[0].usuario.login").value("autor"));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content[0].nomeExibicao").value("Maria Souza"))
+                .andExpect(jsonPath("$.content[0].podeAlterar").value(false));
         mvc.perform(put(base() + "/" + historico.getId()).header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON).content("{\"mensagem\":\"Indevida\"}"))
                 .andExpect(status().isForbidden());
@@ -217,7 +247,7 @@ class MembroMensagensIntegrationTests {
     @Test
     void historicoPaginadoOrdenaMaisRecentesPrimeiro() throws Exception {
         HistoricoMensagem primeira = mensagem();
-        HistoricoMensagem segunda = mensagens.save(new HistoricoMensagem(null, primeira.getDataRegistro(), "Segunda",
+        HistoricoMensagem segunda = mensagens.save(new HistoricoMensagem(null, primeira.getDataRegistro(), null, "Segunda",
                 autor.getPerfilResponsavel(), autor, membro));
         mvc.perform(get(base()).param("size", "1").header("Authorization", token(autor)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(2))
@@ -226,8 +256,104 @@ class MembroMensagensIntegrationTests {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.content[0].id").value(primeira.getId()));
     }
 
+    @Test
+    void conteudoIdenticoNaoCriaDataArtificialDeAlteracao() throws Exception {
+        var historico = mensagem();
+        mvc.perform(put(base() + "/" + historico.getId()).header("Authorization", token(autor))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"mensagem\":\"Original\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.dataAlteracao").isEmpty());
+        entityManager.flush();
+        entityManager.clear();
+        assertThat(mensagens.findById(historico.getId()).orElseThrow().getDataAlteracao()).isNull();
+    }
+
+    @Test
+    void mudarNomeOuPerfilAtualNaoMudaAutoriaNemPerfilHistorico() throws Exception {
+        var historico = mensagem();
+        autor.setPerfilResponsavel("Novo perfil");
+        autor.setTipoUsuario(TipoUsuario.LIDER);
+        autor.setNomeExibicao("Maria Almeida");
+        entityManager.flush();
+        entityManager.clear();
+        mvc.perform(get(base()).header("Authorization", token(autor)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content[0].nomeExibicao").value("Maria Almeida"))
+                .andExpect(jsonPath("$.content[0].perfilResponsavel").value("Perfil autor"))
+                .andExpect(jsonPath("$.content[0].podeAlterar").value(true));
+        mvc.perform(put(base() + "/" + historico.getId()).header("Authorization", token(autor))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"mensagem\":\"Editada\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.perfilResponsavel").value("Perfil autor"));
+    }
+
+    @Test
+    void usuarioLegadoPreencheNomeSemExporLoginOuAlterarPermissoes() throws Exception {
+        var historico = mensagem();
+        autor.setNomeExibicao(null);
+        entityManager.flush();
+        mvc.perform(get(base()).header("Authorization", token(admin)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content[0].nomeExibicao").isEmpty())
+                .andExpect(jsonPath("$.content[0].usuario").doesNotExist())
+                .andExpect(jsonPath("$.content[0].idUsuario").doesNotExist());
+        mvc.perform(post(base()).header("Authorization", token(autor)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mensagem\":\"Nova\"}"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/auth/perfil").header("Authorization", token(autor)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.nomeExibicao").isEmpty())
+                .andExpect(jsonPath("$.login").doesNotExist()).andExpect(jsonPath("$.id").doesNotExist());
+        mvc.perform(put("/auth/perfil").header("Authorization", token(autor)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nomeExibicao\":\"  Maria Silva  \",\"id\":" + admin.getId()
+                                + ",\"login\":\"forjado\",\"tipoUsuario\":\"ADMIN\",\"perfilResponsavel\":\"Outro\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.nomeExibicao").value("Maria Silva"));
+        entityManager.flush();
+        entityManager.clear();
+        var atualizado = usuarios.findById(autor.getId()).orElseThrow();
+        assertThat(atualizado.getLogin()).isEqualTo("autor");
+        assertThat(atualizado.getTipoUsuario()).isEqualTo(TipoUsuario.USER);
+        assertThat(atualizado.getPerfilResponsavel()).isEqualTo("Perfil autor");
+        assertThat(usuarios.findById(admin.getId()).orElseThrow().getNomeExibicao()).isEqualTo("Maria Souza");
+        mvc.perform(post(base()).header("Authorization", token(autor)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mensagem\":\"Nova\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.nomeExibicao").value("Maria Silva"));
+        assertThat(mensagens.findById(historico.getId()).orElseThrow().getUsuario().getId()).isEqualTo(autor.getId());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"{}", "{\"nomeExibicao\":null}", "{\"nomeExibicao\":\"\"}", "{\"nomeExibicao\":\"   \"}"})
+    void nomePublicoObrigatorioNoPerfilENoCadastro(String corpo) throws Exception {
+        mvc.perform(put("/auth/perfil").header("Authorization", token(autor)).contentType(MediaType.APPLICATION_JSON).content(corpo))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$[0].campo").value("nomeExibicao"));
+        String cadastro = corpo.substring(0, corpo.length() - 1)
+                + (corpo.length() > 2 ? "," : "")
+                + "\"login\":\"novo\",\"senha\":\"senha-teste\",\"senhaAcesso\":\"chave-de-teste\",\"perfilResponsavel\":\"Administrador\"}";
+        mvc.perform(post("/auth/adm").contentType(MediaType.APPLICATION_JSON).content(cadastro))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$[0].campo").value("nomeExibicao"));
+    }
+
+    @Test
+    void validaLimiteDoNomeEProtegePerfilSemAutenticacao() throws Exception {
+        mvc.perform(put("/auth/perfil").header("Authorization", token(autor)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nomeExibicao\":\"" + "a".repeat(256) + "\"}"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/auth/perfil")).andExpect(status().isForbidden());
+        mvc.perform(put("/auth/perfil").contentType(MediaType.APPLICATION_JSON).content("{\"nomeExibicao\":\"Maria\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void cadastroGravaNomeELoginContinuaSemExigirNome() throws Exception {
+        mvc.perform(post("/auth/adm").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"login\":\"novo\",\"senha\":\"senha-teste\",\"senhaAcesso\":\"chave-de-teste\","
+                                + "\"perfilResponsavel\":\"Administrador\",\"nomeExibicao\":\" João Silva \"}"))
+                .andExpect(status().isOk());
+        entityManager.flush();
+        entityManager.clear();
+        assertThat(((Usuario) usuarios.findByLogin("novo")).getNomeExibicao()).isEqualTo("João Silva");
+        mvc.perform(post("/auth").contentType(MediaType.APPLICATION_JSON).content("{\"login\":\"novo\",\"senha\":\"senha-teste\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.tokenJWT").isNotEmpty());
+    }
+
     private Usuario usuario(String login, TipoUsuario tipo) {
-        return usuarios.save(new Usuario(login, "senha-teste", "Perfil " + login, tipo));
+        // Nomes iguais intencionalmente: autorização nunca pode depender do nome público.
+        return usuarios.save(new Usuario(login, "senha-teste", "Perfil " + login, tipo, "Maria Souza"));
     }
 
     private HistoricoMensagem mensagem() {

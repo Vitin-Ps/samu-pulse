@@ -4,6 +4,8 @@ import com.example.samu_pulse.domain.historico_mensagem.dto.DadosHistoricoMensag
 import com.example.samu_pulse.domain.historico_mensagem.dto.HistoricoMensagemResponse;
 import com.example.samu_pulse.domain.membro.Membro;
 import com.example.samu_pulse.domain.usuario.Usuario;
+import com.example.samu_pulse.domain.usuario.UsuarioService;
+import com.example.samu_pulse.infra.exception.ApiException;
 import com.example.samu_pulse.repository.HistoricoMensagemRepository;
 import com.example.samu_pulse.repository.MembroRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -12,7 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,24 +27,32 @@ public class HistoricoMensagemService {
     @Autowired
     private MembroRepository membroRepository;
 
+    @Autowired
+    private UsuarioService usuarioService;
+
     @Transactional(readOnly = true)
     public Page<HistoricoMensagemResponse> listarMensagens(Integer idMembro, Pageable pageable) {
         buscarMembroAtivo(idMembro);
+        Integer idUsuario = usuarioService.usuarioAutenticado().getId();
         return historicoMensagemRepository.findAllByMembroId(idMembro, pageable)
-                .map(HistoricoMensagemResponse::new);
+                .map(historico -> new HistoricoMensagemResponse(historico, idUsuario));
     }
 
     public HistoricoMensagemResponse criarMensagem(Integer idMembro, DadosHistoricoMensagemRequest dados) {
         Membro membro = buscarMembroAtivo(idMembro);
-        HistoricoMensagem historico = new HistoricoMensagem(membro, usuarioAutenticado(), dados.mensagem());
+        Usuario usuario = usuarioService.usuarioAutenticado();
+        if (usuario.getNomeExibicao() == null || usuario.getNomeExibicao().isBlank()) {
+            throw new ApiException("Informe seu nome de exibição em Meu perfil antes de criar uma mensagem.");
+        }
+        HistoricoMensagem historico = new HistoricoMensagem(membro, usuario, dados.mensagem());
         historicoMensagemRepository.save(historico);
-        return new HistoricoMensagemResponse(historico);
+        return new HistoricoMensagemResponse(historico, usuario.getId());
     }
 
     public HistoricoMensagemResponse editarMensagem(Integer idMembro, Long id, DadosHistoricoMensagemRequest dados) {
         HistoricoMensagem historico = buscarMensagemDoAutor(idMembro, id);
         historico.atualizarMensagem(dados.mensagem());
-        return new HistoricoMensagemResponse(historico);
+        return new HistoricoMensagemResponse(historico, usuarioService.usuarioAutenticado().getId());
     }
 
     public void excluirMensagem(Integer idMembro, Long id) {
@@ -61,18 +70,10 @@ public class HistoricoMensagemService {
         buscarMembroAtivo(idMembro);
         HistoricoMensagem historico = historicoMensagemRepository.findByIdAndMembroId(id, idMembro)
                 .orElseThrow(EntityNotFoundException::new);
-        if (!usuarioAutenticado().getId().equals(historico.getUsuario().getId())) {
+        if (!usuarioService.usuarioAutenticado().getId().equals(historico.getUsuario().getId())) {
             throw new AccessDeniedException("Somente o autor pode alterar ou excluir a mensagem!");
         }
         return historico;
     }
 
-    private Usuario usuarioAutenticado() {
-        var autenticacao = SecurityContextHolder.getContext().getAuthentication();
-        if (autenticacao == null || !autenticacao.isAuthenticated()
-                || !(autenticacao.getPrincipal() instanceof Usuario usuario) || usuario.getId() == null) {
-            throw new AccessDeniedException("Usuário não autenticado!");
-        }
-        return usuario;
-    }
 }

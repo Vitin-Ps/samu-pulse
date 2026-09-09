@@ -7,9 +7,11 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import {useNavigate} from 'react-router-dom';
 import {AuthContext} from '../Auth/AuthContext';
+import {PerfilModal} from './components/PerfilModal';
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [perfilAberto, setPerfilAberto] = useState(false);
   const navigate = useNavigate();
 
   const auth = useContext(AuthContext);
@@ -42,6 +44,7 @@ export const Header = () => {
         </span>
 
         <button
+          aria-label="Menu do usuário"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="w-11 h-11 rounded-full bg-samu-bg text-samu-primary border-2 border-white shadow-sm flex items-center justify-center hover:bg-samu-border/50 transition-colors cursor-pointer outline-none">
           <FontAwesomeIcon icon={faUser} className="text-lg" />
@@ -49,6 +52,12 @@ export const Header = () => {
 
         {isMenuOpen && (
           <div className="absolute top-14 right-0 w-36 bg-white border border-samu-border rounded-xl shadow-card z-50 overflow-hidden py-1">
+            {auth.user && (
+              <button type="button" onClick={() => { setIsMenuOpen(false); setPerfilAberto(true); }}
+                className="w-full text-left px-4 py-2.5 text-sm text-samu-text hover:bg-samu-bg flex items-center gap-2 cursor-pointer">
+                <FontAwesomeIcon icon={faUser} /> Meu perfil
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="w-full text-left px-4 py-2.5 text-sm text-samu-danger hover:bg-samu-bg transition-colors flex items-center gap-2 cursor-pointer">
@@ -58,6 +67,7 @@ export const Header = () => {
           </div>
         )}
       </div>
+      {perfilAberto && auth.user && <PerfilModal onClose={() => setPerfilAberto(false)} />}
     </header>
   );
 };

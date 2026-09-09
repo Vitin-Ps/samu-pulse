@@ -20,14 +20,17 @@ public class HistoricoMensagem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false, updatable = false)
     private LocalDateTime dataRegistro;
+    private LocalDateTime dataAlteracao;
     private String mensagem;
+    @Column(nullable = false, updatable = false)
     private String perfilResponsavel;
     @ManyToOne
-    @JoinColumn(name = "id_usuario")
+    @JoinColumn(name = "id_usuario", nullable = false, updatable = false)
     private Usuario usuario;
     @ManyToOne
-    @JoinColumn(name = "id_membro")
+    @JoinColumn(name = "id_membro", nullable = false, updatable = false)
     private Membro membro;
 
     public HistoricoMensagem(Membro membro, Usuario usuario, String mensagem) {
@@ -39,6 +42,9 @@ public class HistoricoMensagem {
     }
 
     public void atualizarMensagem(String mensagem) {
-        this.mensagem = mensagem;
+        if (!java.util.Objects.equals(this.mensagem, mensagem)) {
+            this.mensagem = mensagem;
+            this.dataAlteracao = LocalDateTime.now();
+        }
     }
 }

@@ -9,6 +9,8 @@ export const useAuth = () => {
   };
 
   return {
+    consultarPerfil: () => handleRequest(() => AuthService.consultarPerfil()),
+    atualizarPerfil: (nomeExibicao: string) => handleRequest(() => AuthService.atualizarPerfil(nomeExibicao)),
     loading,
     error,
     fazerLogin,

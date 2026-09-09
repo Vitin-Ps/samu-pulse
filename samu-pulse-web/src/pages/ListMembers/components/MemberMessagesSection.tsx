@@ -53,14 +53,14 @@ export const MemberMessagesSection = ({idMembro}: {idMembro: number}) => {
               <article key={mensagem.id} className="rounded-2xl border border-samu-border bg-samu-bg/60 p-4 space-y-3">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
+                    <span className="text-[11px] font-semibold text-samu-neutral uppercase">Responsável</span>
                     <p className="text-sm font-semibold text-samu-text wrap-anywhere">
-                      {mensagem.perfilResponsavel || mensagem.usuario.perfilResponsavel || mensagem.usuario.login}
+                      {mensagem.nomeExibicao || 'Nome não informado'}
                       {model.podeAlterar(mensagem) && <span className="ml-2 text-xs font-normal text-samu-primary">Você</span>}
                     </p>
-                    <p className="text-xs text-samu-text/70 wrap-anywhere">{mensagem.usuario.login}</p>
-                    <time dateTime={mensagem.dataRegistro} className="text-xs text-samu-text/70">
-                      {formatDateOfPattern(mensagem.dataRegistro, 'DD/MM/YYYY [às] HH:mm')}
-                    </time>
+                    <p className="text-xs text-samu-text/70 wrap-anywhere mt-1">
+                      <span className="font-medium">Perfil: </span>{mensagem.perfilResponsavel}
+                    </p>
                   </div>
                   {model.podeAlterar(mensagem) && (
                     <div className="flex gap-1">
@@ -80,6 +80,20 @@ export const MemberMessagesSection = ({idMembro}: {idMembro: number}) => {
                 <p className="text-sm text-samu-text leading-relaxed whitespace-pre-wrap wrap-anywhere">
                   {mensagem.mensagem || 'Mensagem sem conteúdo.'}
                 </p>
+                <div className="border-t border-samu-border pt-2 space-y-1 text-xs text-samu-text/70">
+                  <p><span className="font-medium">Criada em: </span>
+                    <time dateTime={mensagem.dataRegistro}>
+                      {formatDateOfPattern(mensagem.dataRegistro, 'DD/MM/YYYY [às] HH:mm')}
+                    </time>
+                  </p>
+                  {mensagem.dataAlteracao && (
+                    <p><span className="font-medium">Alterada em: </span>
+                      <time dateTime={mensagem.dataAlteracao}>
+                        {formatDateOfPattern(mensagem.dataAlteracao, 'DD/MM/YYYY [às] HH:mm')}
+                      </time>
+                    </p>
+                  )}
+                </div>
               </article>
             ))}
           </div>

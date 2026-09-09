@@ -1,17 +1,12 @@
-import {TipoUsuario} from './Usuario';
-
 export interface HistoricoMensagem {
   id: number;
   idMembro: number;
-  idUsuario: number;
-  usuario: {
-    login: string;
-    perfilResponsavel: string;
-    tipoUsuario: TipoUsuario;
-  };
+  nomeExibicao: string | null;
   perfilResponsavel: string;
   mensagem: string | null;
   dataRegistro: string;
+  dataAlteracao: string | null;
+  podeAlterar: boolean;
 }
 
 export interface DadosHistoricoMensagemRequest {

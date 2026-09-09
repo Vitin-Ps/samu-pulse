@@ -1,21 +1,21 @@
 package com.example.samu_pulse.domain.historico_mensagem.dto;
 
 import com.example.samu_pulse.domain.historico_mensagem.HistoricoMensagem;
-import com.example.samu_pulse.domain.usuario.dto.UsuarioResponse;
 import java.time.LocalDateTime;
 
 public record HistoricoMensagemResponse(
         Long id,
         Integer idMembro,
-        Integer idUsuario,
-        UsuarioResponse usuario,
+        String nomeExibicao,
         String perfilResponsavel,
         String mensagem,
-        LocalDateTime dataRegistro
+        LocalDateTime dataRegistro,
+        LocalDateTime dataAlteracao,
+        boolean podeAlterar
 ) {
-    public HistoricoMensagemResponse(HistoricoMensagem historico) {
-        this(historico.getId(), historico.getMembro().getId(), historico.getUsuario().getId(),
-                new UsuarioResponse(historico.getUsuario()), historico.getPerfilResponsavel(),
-                historico.getMensagem(), historico.getDataRegistro());
+    public HistoricoMensagemResponse(HistoricoMensagem historico, Integer idUsuarioAutenticado) {
+        this(historico.getId(), historico.getMembro().getId(), historico.getUsuario().getNomeExibicao(),
+                historico.getPerfilResponsavel(), historico.getMensagem(), historico.getDataRegistro(),
+                historico.getDataAlteracao(), historico.getUsuario().getId().equals(idUsuarioAutenticado));
     }
 }

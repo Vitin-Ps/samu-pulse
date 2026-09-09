@@ -1,5 +1,4 @@
-import {FormEvent, useContext, useEffect, useRef, useState} from 'react';
-import {AuthContext} from '../../Auth/AuthContext';
+import {FormEvent, useEffect, useRef, useState} from 'react';
 import {useStateData} from '../../hooks';
 import {useHistoricoMensagem} from '../../hooks/useHistoricoMensagem';
 import {HistoricoMensagem} from '../../interfaces/HistoricoMensagem';
@@ -20,7 +19,6 @@ interface MemberMessagesState {
 }
 
 export const useMemberMessagesModel = (idMembro: number) => {
-  const {user} = useContext(AuthContext);
   const api = useHistoricoMensagem();
   const [refresh, setRefresh] = useState(0);
   const ativo = useRef(true);
@@ -62,7 +60,7 @@ export const useMemberMessagesModel = (idMembro: number) => {
 
   const ocupado = data.salvando || data.excluindoId !== null;
   const podeAlterar = (mensagem: HistoricoMensagem) =>
-    user?.id !== undefined && user.id === mensagem.idUsuario;
+    mensagem.podeAlterar === true;
 
   const abrirEditor = (mensagem?: HistoricoMensagem) => {
     if (ocupado || (mensagem && !podeAlterar(mensagem))) return;

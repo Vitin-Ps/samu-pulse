@@ -26,17 +26,19 @@ public class Usuario implements UserDetails {
     private String login;
     private String senha;
     private String perfilResponsavel;
+    private String nomeExibicao;
     @Enumerated(EnumType.STRING)
     private TipoUsuario tipoUsuario;
     @Setter
     private Boolean ativo = true;
 
     public Usuario(String login, String senhaCodificada,
-                   String perfilResponsavel, TipoUsuario tipoUsuario) {
+                   String perfilResponsavel, TipoUsuario tipoUsuario, String nomeExibicao) {
         this.login = login;
         this.senha = senhaCodificada;
         this.tipoUsuario = tipoUsuario;
         this.perfilResponsavel = perfilResponsavel;
+        this.nomeExibicao = nomeExibicao;
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

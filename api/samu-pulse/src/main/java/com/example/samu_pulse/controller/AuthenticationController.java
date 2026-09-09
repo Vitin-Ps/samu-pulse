@@ -3,6 +3,10 @@ package com.example.samu_pulse.controller;
 import com.example.samu_pulse.domain.usuario.DadosAutenticacao;
 import com.example.samu_pulse.domain.usuario.TipoUsuario;
 import com.example.samu_pulse.domain.usuario.Usuario;
+import com.example.samu_pulse.domain.usuario.UsuarioService;
+import com.example.samu_pulse.domain.usuario.dto.DadosCadastroUsuarioRequest;
+import com.example.samu_pulse.domain.usuario.dto.DadosPerfilUpdate;
+import com.example.samu_pulse.domain.usuario.dto.PerfilResponse;
 import com.example.samu_pulse.infra.exception.ApiException;
 import com.example.samu_pulse.infra.security.DadosTokenJWT;
 import com.example.samu_pulse.infra.security.TokenService;
@@ -25,6 +29,19 @@ import static io.micrometer.common.util.StringUtils.isEmpty;
 public class AuthenticationController {
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private UsuarioService usuarioService;
+
+    @GetMapping("/perfil")
+    public ResponseEntity<PerfilResponse> consultarPerfil() {
+        return ResponseEntity.ok(usuarioService.consultarPerfil());
+    }
+
+    @PutMapping("/perfil")
+    public ResponseEntity<PerfilResponse> atualizarPerfil(@RequestBody @Valid DadosPerfilUpdate dados) {
+        return ResponseEntity.ok(usuarioService.atualizarPerfil(dados));
+    }
 
     @Autowired
     private AuthenticationManager manager;
@@ -50,13 +67,14 @@ public class AuthenticationController {
     @CrossOrigin(origins = "http://localhost:8080")
     @PostMapping("/adm")
     @Transactional
-    public ResponseEntity<Void> cadAdmin(@RequestBody @Valid DadosAutenticacao dados) {
+    public ResponseEntity<Void> cadAdmin(@RequestBody @Valid DadosCadastroUsuarioRequest dados) {
         if (isEmpty(dados.senhaAcesso()) || !dados.senhaAcesso().equals(senhaAcesso)) {
             throw new ApiException("Senha chave para cadastrar admin inválida!");
         }
 
         String senhaCodificada = new BCryptPasswordEncoder().encode(dados.senha());
-        Usuario usuario = new Usuario(dados.login(), senhaCodificada, dados.perfilResponsavel(), TipoUsuario.ADMIN);
+        Usuario usuario = new Usuario(dados.login(), senhaCodificada, dados.perfilResponsavel(),
+                TipoUsuario.ADMIN, dados.nomeExibicao().strip());
         repository.save(usuario);
         return ResponseEntity.ok().build();
     }
