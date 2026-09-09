@@ -22,7 +22,7 @@ export const Input: React.FC<InputProps> = ({
   ...props
 }) => {
   return (
-    <div className={`w-full mb-5 ${className}`}>
+    <div className={`w-full ${className}`}>
       {label && (
         <label className="block text-sm font-medium text-samu-text mb-1.5" htmlFor={id}>
           {label} {required && <span className="text-samu-danger">*</span>}
@@ -41,7 +41,7 @@ export const Input: React.FC<InputProps> = ({
           id={id}
           required={required}
           className={`
-            w-full rounded-xl border border-samu-border bg-samu-bg/30 py-3 text-samu-text outline-none 
+            w-full rounded-xl border border-samu-border bg-white py-3 text-samu-text outline-none 
             focus:border-samu-primary focus:ring-1 focus:ring-samu-primary transition-all
             disabled:opacity-60 disabled:cursor-not-allowed
             ${iconLeft ? 'pl-11' : 'px-4'}

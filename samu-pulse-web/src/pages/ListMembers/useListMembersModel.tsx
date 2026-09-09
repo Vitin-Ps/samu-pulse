@@ -23,6 +23,10 @@ export interface ListMembersStateModel {
   isCropModalOpen: boolean;
   detailsModalOpen: boolean;
   editModalOpen: boolean;
+  dataNascimento: string;
+  status?: StatusMembro;
+  desc: boolean;
+  sort: string;
 }
 
 export const statusMembroOptions: OptionWithIcon[] = [
@@ -30,6 +34,15 @@ export const statusMembroOptions: OptionWithIcon[] = [
   {value: StatusMembro.DISTANTE, text: 'Distante'},
   {value: StatusMembro.AFASTADO, text: 'Afastado'},
   {value: StatusMembro.OUTRA_IGREJA, text: 'Outra Igreja'},
+];
+
+export const camposOptions: OptionWithIcon[] = [
+  {value: 'nome', text: 'Nome'},
+  {value: 'data_nascimento', text: 'Data de Nascimento'},
+  {value: 'data_conversao', text: 'Data de Conversão'},
+  {value: 'data_ultimo_contato', text: 'Último Contato'},
+  {value: 'tipo', text: 'Tipo de Membro'},
+  {value: 'id', text: 'Código (ID)'},
 ];
 
 export const useListMembersModel = () => {
@@ -50,26 +63,69 @@ export const useListMembersModel = () => {
     isCropModalOpen: false,
     detailsModalOpen: false,
     editModalOpen: false,
+    status: undefined,
+    dataNascimento: '',
+    desc: false,
+    sort: 'nome',
   });
 
-  const fetchMembros = async () => {
+  const hasFilter = Boolean(
+    stateModel.data.search ||
+    stateModel.data.dataNascimento ||
+    stateModel.data.status ||
+    stateModel.data.sort !== 'nome' ||
+    stateModel.data.desc,
+  );
+
+  const handleClearFilters = async () => {
+    stateModel.updateState('search', '');
+    stateModel.updateState('dataNascimento', '');
+    stateModel.updateState('status', undefined); // Use '' em vez de undefined
+    stateModel.updateState('page', 0);
+    stateModel.updateState('sort', 'nome');
+    stateModel.updateState('desc', false);
+
+    await fetchMembros({
+      search: '',
+      dataNascimento: '',
+      status: undefined,
+      page: 0,
+      sort: 'nome',
+      desc: false,
+    });
+  };
+
+  const fetchMembros = async ({
+    search,
+    dataNascimento,
+    status,
+    page,
+    sort,
+    desc,
+  }: {
+    search: string;
+    dataNascimento: string;
+    status: StatusMembro | undefined;
+    page: number;
+    sort: string;
+    desc: boolean;
+  }) => {
     setLoading(true);
     try {
       const res: Response<Membro[]> = await listarPageMembros(
-        stateModel.data.search,
+        search,
+        dataNascimento,
+        status,
         stateModel.data.size,
-        stateModel.data.page,
-        'nome',
-        'asc',
+        page,
+        sort,
+        desc ? 'desc' : 'asc',
       );
 
       if (res && res.content) {
-        stateModel.updateMultipleStates({
-          ...stateModel.data,
-          membros: res.content,
-          totalPages: res.totalPages,
-          totalElements: res.totalElements,
-        });
+        stateModel.updateState('membros', res.content);
+        stateModel.updateState('totalPages', res.totalPages);
+        stateModel.updateState('totalElements', res.totalElements);
       }
     } catch (error) {
       console.error('Erro ao buscar membros:', error);
@@ -80,14 +136,28 @@ export const useListMembersModel = () => {
 
   // Busca inicial e ao trocar de página
   useEffect(() => {
-    fetchMembros();
+    fetchMembros({
+      search: stateModel.data.search,
+      dataNascimento: stateModel.data.dataNascimento,
+      status: stateModel.data.status,
+      page: stateModel.data.page,
+      sort: stateModel.data.sort,
+      desc: stateModel.data.desc,
+    });
   }, [stateModel.data.page]);
 
   // Função acionada ao enviar o formulário de busca
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     stateModel.updateState('page', 0);
-    fetchMembros();
+    fetchMembros({
+      search: stateModel.data.search,
+      dataNascimento: stateModel.data.dataNascimento,
+      status: stateModel.data.status,
+      page: stateModel.data.page,
+      sort: stateModel.data.sort,
+      desc: stateModel.data.desc,
+    });
   };
 
   // Controles de paginação
@@ -257,6 +327,7 @@ export const useListMembersModel = () => {
 
   return {
     stateModel,
+    hasFilter,
     handleSearch,
     nextPage,
     prevPage,
@@ -266,5 +337,6 @@ export const useListMembersModel = () => {
     onOpenDetails,
     onOpenEdit,
     onClose,
+    handleClearFilters,
   };
 };
