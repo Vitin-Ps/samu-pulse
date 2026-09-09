@@ -1,6 +1,7 @@
 import React, {TextareaHTMLAttributes} from 'react';
 
 interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  ref?: React.Ref<HTMLTextAreaElement>;
   label?: string;
   helperText?: string;
 }

@@ -1,4 +1,6 @@
-import {useEffect, FormEvent} from 'react';
+import {useContext, useEffect, useRef, FormEvent} from 'react';
+import {AuthContext} from '../../Auth/AuthContext';
+import {TipoUsuario} from '../../interfaces/Usuario';
 import {useMembro, useStateData} from '../../hooks';
 import {useFunctionsProvider} from '../../contexts/FunctionsProvider';
 import {Membro, MembroJson, StatusMembro} from '../../interfaces/Membro';
@@ -46,8 +48,11 @@ export const camposOptions: OptionWithIcon[] = [
 ];
 
 export const useListMembersModel = () => {
-  const {listarPageMembros, alterarLogoMembro, atualizarMembro, delImgMembro} =
+  const {listarPageMembros, alterarLogoMembro, atualizarMembro, delImgMembro, deletarMembro} =
     useMembro();
+  const {user} = useContext(AuthContext);
+  const isAdmin = user?.tipoUsuario === TipoUsuario.ADMIN;
+  const inativando = useRef(false);
   const {setLoading} = useFunctionsProvider();
   const navigate = useNavigate();
 
@@ -191,6 +196,36 @@ export const useListMembersModel = () => {
     document.body.style.overflow = '';
   };
 
+  const inativarMembro = (membro: Membro) => {
+    if (!isAdmin || inativando.current) return;
+    MessageService.confirmMessage(
+      `Deseja inativar ${membro.nome}? O membro sairá da listagem de ativos. Seu cadastro e histórico serão preservados.`,
+      async () => {
+        if (inativando.current) return;
+        inativando.current = true;
+        setLoading(true);
+        try {
+          const sucesso = await deletarMembro(membro.id);
+          if (!sucesso) return;
+          stateModel.updateState('membros', stateModel.data.membros.filter(item => item.id !== membro.id));
+          stateModel.updateState('totalElements', Math.max(0, stateModel.data.totalElements - 1));
+          if (stateModel.data.membroSelecionado?.id === membro.id) onClose();
+          MessageService.successMessage(`Membro ${membro.nome} inativado com sucesso!`);
+          const page = stateModel.data.membros.length === 1 && stateModel.data.page > 0
+            ? stateModel.data.page - 1 : stateModel.data.page;
+          if (page !== stateModel.data.page) {
+            stateModel.updateState('page', page);
+          } else {
+            await fetchMembros({...stateModel.data, page});
+          }
+        } finally {
+          inativando.current = false;
+          setLoading(false);
+        }
+      },
+    );
+  };
+
   const alterarMembro = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -326,6 +361,8 @@ export const useListMembersModel = () => {
   };
 
   return {
+    isAdmin,
+    inativarMembro,
     stateModel,
     hasFilter,
     handleSearch,

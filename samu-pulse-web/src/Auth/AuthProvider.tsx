@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {AuthContext} from './AuthContext';
 import {useNavigate} from 'react-router-dom';
-import {Usuario} from '../interfaces/Usuario';
+import {TipoUsuario, Usuario} from '../interfaces/Usuario';
 import {useToken, useAuth} from '../hooks';
 import {  
   addUserStorage,
@@ -31,19 +31,21 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
 
           // Verifica se o usuário armazenado corresponde ao token
           if (userStored && dadosToken && userStored.id === dadosToken.id) {
-            setUser(userStored);
+            const usuario = {...userStored, tipoUsuario: dadosToken.role as TipoUsuario};
+            setUser(usuario);
+            addUserStorage(usuario);
           } else {
             // Se não corresponder, busca novamente ou limpa tudo
             if (dadosToken) {
               setUser({
-                login: '',
+                login: dadosToken.sub,
                 id: dadosToken.id,
-                tipoUsuario: dadosToken.role as any,
+                tipoUsuario: dadosToken.role as TipoUsuario,
               });
               addUserStorage({
-                login: '',
+                login: dadosToken.sub,
                 id: dadosToken.id,
-                tipoUsuario: dadosToken.role as any,
+                tipoUsuario: dadosToken.role as TipoUsuario,
               });
             } else {
               // Se não conseguir buscar o usuário, limpa tudo
@@ -92,6 +94,13 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
         addToken(data.tokenJWT, lembrar);
         const dadosToken = infoToken(data.tokenJWT);
         if (dadosToken) {
+          const usuario: Usuario = {
+            id: dadosToken.id,
+            login: dadosToken.sub,
+            tipoUsuario: dadosToken.role as TipoUsuario,
+          };
+          setUser(usuario);
+          addUserStorage(usuario);
           // const resUser = await detalharUsuario(dadosToken.id);
           // if (resUser) {
             // setUser(resUser);

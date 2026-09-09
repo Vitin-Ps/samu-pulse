@@ -19,6 +19,7 @@ interface MemberCardProps {
   getUrlCarregarImg: () => string;
   onOpenDetails: (membro: Membro) => void;
   onOpenEdit?: (membro: Membro) => void;
+  onInativar?: (membro: Membro) => void;
 }
 
 export const MemberCard: React.FC<MemberCardProps> = ({
@@ -26,6 +27,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   getUrlCarregarImg,
   onOpenDetails,
   onOpenEdit,
+  onInativar,
 }) => {
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -137,6 +139,15 @@ export const MemberCard: React.FC<MemberCardProps> = ({
           Ver detalhes
           <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-[10px]" />
         </button>
+        {onInativar && (
+          <button
+            type="button"
+            onClick={() => onInativar(membro)}
+            className="mt-3 block text-xs font-medium text-samu-danger hover:underline cursor-pointer"
+            aria-label={`Inativar membro ${membro.nome}`}>
+            Inativar membro
+          </button>
+        )}
       </div>
     </section>
   );

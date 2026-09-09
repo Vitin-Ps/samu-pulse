@@ -18,7 +18,7 @@ class MembroService {
         'Content-Type': 'application/json',
       },
     });
-    return res.data;
+    return res.status === 204;
   }
 
   async listarPageMembros(

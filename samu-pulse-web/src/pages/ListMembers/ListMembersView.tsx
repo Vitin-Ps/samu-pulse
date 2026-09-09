@@ -30,6 +30,8 @@ import InputCheckBox from '../components/Elements/InputCheckBox';
 import {getColor} from '../../interfaces/Colors';
 
 export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
+  isAdmin,
+  inativarMembro,
   stateModel,
   hasFilter,
   handleClearFilters,
@@ -174,13 +176,14 @@ export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
         id="section-grid"
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {stateModel.data.membros.length > 0 ? (
-          stateModel.data.membros.map((membro, index) => (
+          stateModel.data.membros.map(membro => (
             <MemberCard
-              key={index}
+              key={membro.id}
               membro={membro}
               getUrlCarregarImg={getUrlCarregarImg}
               onOpenDetails={onOpenDetails}
               onOpenEdit={onOpenEdit}
+              onInativar={isAdmin ? inativarMembro : undefined}
             />
           ))
         ) : (

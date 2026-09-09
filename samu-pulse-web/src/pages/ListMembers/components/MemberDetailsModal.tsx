@@ -7,6 +7,7 @@ import {
 } from '../../../services/Extra/FuncionalidadesService';
 import {Avatar} from '../../components/Avatar';
 import { Membro } from '../../../interfaces/Membro';
+import {MemberMessagesSection} from './MemberMessagesSection';
 
 
 interface MemberDetailsModalProps {
@@ -26,9 +27,9 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
     <Modal
       showModal={isOpen}
       setShowModal={onClose}
-      className="max-w-4xl p-6 rounded-3xl border border-samu-border">
+      className="max-w-4xl max-h-[90dvh] flex flex-col p-4 sm:p-6 rounded-3xl border border-samu-border">
       {/* Cabeçalho */}
-      <div className="flex items-start justify-between gap-4 mb-5 border-b border-samu-border pb-4">
+      <div className="flex shrink-0 items-start justify-between gap-4 mb-5 border-b border-samu-border pb-4 pr-5">
         <div className="flex flex-col items-start gap-3">
           <p className="text-xs font-medium text-samu-neutral uppercase tracking-wider mb-1">
             Detalhes do Membro
@@ -48,7 +49,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
       </div>
 
       {/* Corpo com Informações Condicionais */}
-      <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+      <div className="space-y-4 min-h-0 overflow-y-auto overscroll-contain pr-1">
         {/* Informações Principais Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {membro.telefone && (
@@ -141,10 +142,11 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
             </p>
           </div>
         )}
+        {isOpen && <MemberMessagesSection key={membro.id} idMembro={membro.id} />}
       </div>
 
       {/* Rodapé / Fechar */}
-      <div className="mt-6 flex justify-end pt-4 border-t border-samu-border">
+      <div className="mt-4 shrink-0 flex justify-end pt-4 border-t border-samu-border">
         <button
           type="button"
           onClick={onClose}
