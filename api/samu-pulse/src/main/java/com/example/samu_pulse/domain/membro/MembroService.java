@@ -8,6 +8,9 @@ import com.example.samu_pulse.infra.exception.ApiException;
 import com.example.samu_pulse.infra.file.ArquivoService;
 import com.example.samu_pulse.repository.MembroRepository;
 import jakarta.validation.Valid;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +23,17 @@ public class MembroService {
 
     @Autowired
     private ArquivoService arquivoService;
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public void inativarMembro(Integer id) {
+        Membro membro = membroRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
+        if (!Boolean.TRUE.equals(membro.getAtivo())) {
+            throw new ApiException("Membro já está inativo!");
+        }
+        membro.inativar();
+    }
 
     public MembroResponse createMembro(DadosMembroRequest dados) {
         Membro newMembro = new Membro(dados);

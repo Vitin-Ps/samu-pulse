@@ -8,8 +8,6 @@ import com.example.samu_pulse.domain.membro.dto.DadosMembroUpdate;
 import com.example.samu_pulse.domain.membro.dto.MembroResponse;
 import com.example.samu_pulse.repository.MembroRepository;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +31,12 @@ public class MembroController {
 
     @Autowired
     private MembroRepository membroRepository;
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> disableMember(@PathVariable Integer id) {
+        membroService.inativarMembro(id);
+        return ResponseEntity.noContent().build();
+    }
 
 
     @PostMapping

@@ -35,7 +35,7 @@ public class TratadorDeErros {
 //        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Falha na Autenticação!");
 //    }
 
-    @ExceptionHandler(AccessDeniedException.class)
+    @ExceptionHandler({AccessDeniedException.class, org.springframework.security.access.AccessDeniedException.class})
     public ResponseEntity erroAcessoNegado() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso Negado!");
     }

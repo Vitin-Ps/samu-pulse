@@ -29,4 +29,16 @@ public class HistoricoMensagem {
     @ManyToOne
     @JoinColumn(name = "id_membro")
     private Membro membro;
+
+    public HistoricoMensagem(Membro membro, Usuario usuario, String mensagem) {
+        this.membro = membro;
+        this.usuario = usuario;
+        this.perfilResponsavel = usuario.getPerfilResponsavel();
+        this.mensagem = mensagem;
+        this.dataRegistro = LocalDateTime.now();
+    }
+
+    public void atualizarMensagem(String mensagem) {
+        this.mensagem = mensagem;
+    }
 }

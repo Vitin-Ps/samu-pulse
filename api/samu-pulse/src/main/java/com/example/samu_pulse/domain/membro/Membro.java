@@ -49,6 +49,10 @@ public class Membro {
         this.ativo = true;
     }
 
+    public void inativar() {
+        this.ativo = false;
+    }
+
     public Boolean atualizaInformacoes(DadosMembroUpdate dados) {
         boolean alterado = false;
 
