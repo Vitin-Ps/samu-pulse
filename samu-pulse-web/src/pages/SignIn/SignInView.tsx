@@ -10,7 +10,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import {faUser, faEye, faEyeSlash} from '@fortawesome/free-regular-svg-icons';
 import {useSignInModel} from './useSignInModel';
-import {Button, Input} from '../components/Elements';
+import {Button} from '../components/Elements/Button';
+import {Input} from '../components/Elements/Input';
 
 export const SignInView: FC<ReturnType<typeof useSignInModel>> = ({
   stateModel,

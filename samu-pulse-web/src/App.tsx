@@ -2,8 +2,10 @@ import {Outlet} from 'react-router-dom';
 import {GlobalContext} from './contexts';
 import {MessageServer} from './pages/components/MessageServer';
 import {Loading} from './pages/components/Loading/Loading';
-import {Footer, Header} from './pages';
+import {Footer} from './pages/Footer';
+import {Header} from './pages/Header';
 import {AuthProvider} from './Auth/AuthProvider';
+import {PwaBootstrap} from './pages/components/PwaBootstrap';
 
 export default function App() {
   return (
@@ -17,6 +19,7 @@ export default function App() {
             <Outlet />
           </div>
           <Footer />
+          <PwaBootstrap />
         </GlobalContext>
       </AuthProvider>
     </div>

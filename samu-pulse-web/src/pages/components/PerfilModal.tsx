@@ -1,7 +1,9 @@
 import {FormEvent, useEffect, useRef, useState} from 'react';
 import {useAuth} from '../../hooks';
 import {MessageService} from '../../services';
-import {Button, Input, Modal} from './Elements';
+import {Button} from './Elements/Button';
+import {Input} from './Elements/Input';
+import {Modal} from './Elements/Modal/Modal';
 import Spinner from './Elements/Spinner';
 
 export const PerfilModal = ({onClose}: {onClose: () => void}) => {
