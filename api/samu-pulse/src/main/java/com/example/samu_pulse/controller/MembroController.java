@@ -1,7 +1,6 @@
 package com.example.samu_pulse.controller;
 
 import com.example.samu_pulse.domain.membro.MembroService;
-import com.example.samu_pulse.domain.membro.StatusMembro;
 import com.example.samu_pulse.domain.membro.TipoMembro;
 import com.example.samu_pulse.domain.membro.dto.DadosMembroRequest;
 import com.example.samu_pulse.domain.membro.dto.DadosMembroUpdate;
@@ -58,10 +57,11 @@ public class MembroController {
     }
 
     @GetMapping
+    @Transactional
     public ResponseEntity<Page<MembroResponse>>
-    listMembers(@PageableDefault(size = 10, page = 0, sort = {"nome"}) Pageable pageable, @RequestParam(name = "search") String search,
+    listMembers(@PageableDefault(size = 20, page = 0, sort = {"nome"}) Pageable pageable, @RequestParam(name = "search") String search,
                 @RequestParam(name = "dataNascimento", required = false) @JsonFormat(pattern = "dd/MM/yyyy") LocalDate dataNascimento,
-                @RequestParam(name = "status", required = false) StatusMembro status,
+                @RequestParam(name = "cod_status", required = false) Integer codStatus,
                 @RequestParam(name = "direction", required = false) String direction) {
 
 
@@ -80,7 +80,7 @@ public class MembroController {
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 
         Page<MembroResponse> newListMembers = membroRepository
-                .searchAllMembers(search, dataNascimento, TipoMembro.MEMBRO, status, true, sortedPageable)
+                .searchAllMembers(search, dataNascimento, TipoMembro.MEMBRO, codStatus, true, sortedPageable)
                 .map(MembroResponse::new);
 
         return ResponseEntity.ok(newListMembers);

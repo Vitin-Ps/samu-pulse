@@ -1,4 +1,4 @@
-import {FormEvent} from 'react';
+import {FormEvent, useEffect} from 'react';
 import {useMembro, useStateData} from '../../hooks';
 import {useFunctionsProvider} from '../../contexts/FunctionsProvider';
 import {MessageService} from '../../services';
@@ -7,12 +7,14 @@ import {
   formatDateOfPattern,
 } from '../../services/Extra/FuncionalidadesService';
 import {useNavigate} from 'react-router-dom';
-import {MembroJson, StatusMembro} from '../../interfaces/Membro';
+import {MembroJson} from '../../interfaces/Membro';
+import {useStatusMembro} from '../../hooks/useStatusMembro';
 import {OptionWithIcon} from '../components/Elements/SelectWithElement';
 
 interface AddMemberModelProps {}
 
 export const useAddMemberModel = ({}: AddMemberModelProps) => {
+  const {status, statusMembroOptions} = useStatusMembro();
   const {cadastrarMembro, alterarLogoMembro} = useMembro();
   const {setLoading} = useFunctionsProvider();
   const navigate = useNavigate();
@@ -25,7 +27,7 @@ export const useAddMemberModel = ({}: AddMemberModelProps) => {
     dataNascimento?: string;
     isCropModalOpen: boolean;
     imagensSelecionadas: File[];
-    status: StatusMembro;
+    cod_status: number | null;
   }>({
     nome: '',
     telefone: '',
@@ -34,14 +36,20 @@ export const useAddMemberModel = ({}: AddMemberModelProps) => {
     dataNascimento: '',
     isCropModalOpen: false,
     imagensSelecionadas: [],
-    status: StatusMembro.ATIVO,
+    cod_status: null,
   });
+
+  useEffect(() => {
+    const ativo = status.find(item => item.nome === 'Ativo');
+    if (ativo && stateModel.data.cod_status === null)
+      stateModel.updateState('cod_status', ativo.cod_status);
+  }, [status]);
 
   const salvarMembro = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
-    if (!stateModel.data.nome || !stateModel.data.telefone) {
+    if (!stateModel.data.nome || !stateModel.data.telefone || !stateModel.data.cod_status) {
       MessageService.alertMessage('Preencha os campos obrigatórios (*)');
       setLoading(false);
       return;
@@ -55,7 +63,7 @@ export const useAddMemberModel = ({}: AddMemberModelProps) => {
         : undefined,
       endereco: stateModel.data.endereco,
       observacao: stateModel.data.observacao,
-      status: stateModel.data.status,
+      cod_status: stateModel.data.cod_status,
     };
 
     try {
@@ -94,6 +102,7 @@ export const useAddMemberModel = ({}: AddMemberModelProps) => {
     }
   };
   return {
+    statusMembroOptions,
     stateModel,
     salvarMembro,
   };

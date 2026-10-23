@@ -29,29 +29,8 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   onOpenEdit,
   onInativar,
 }) => {
-  const getStatusConfig = (status: string) => {
-    switch (status) {
-      case 'ATIVO':
-        return {label: 'Ativo', color: 'bg-green-100 text-green-700 border-green-200'};
-      case 'DISTANTE':
-        return {
-          label: 'Distante',
-          color: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-        };
-      case 'AFASTADO':
-        return {label: 'Afastado', color: 'bg-red-100 text-red-700 border-red-200'};
-      case 'OUTRA_IGREJA':
-        return {
-          label: 'Outra Igreja',
-          color: 'bg-blue-100 text-blue-700 border-blue-200',
-        };
-      default:
-        return {
-          label: status || 'Status não informado',
-          color: 'bg-gray-100 text-gray-700 border-gray-200',
-        };
-    }
-  };
+  const statusNome = membro.status?.nome || 'Status não informado';
+  const statusCor = membro.status?.cor || '#374151';
   return (
     <section className=" relative bg-white rounded-3xl border border-samu-border shadow-sm p-6 flex flex-col gap-4 hover:shadow-md transition-shadow">
       <div>
@@ -110,9 +89,10 @@ export const MemberCard: React.FC<MemberCardProps> = ({
 
           {/* Badge com cor dinâmica e Tooltip */}
           <span
-            title={`Status atual: ${getStatusConfig(membro.status).label}`}
-            className={`text-xs font-medium px-2.5 py-1 rounded-full border truncate cursor-help ${getStatusConfig(membro.status).color}`}>
-            {getStatusConfig(membro.status).label}
+            title={`Status atual: ${statusNome}`}
+            style={{color: statusCor, borderColor: `${statusCor}33`, backgroundColor: `${statusCor}1a`}}
+            className="text-xs font-medium px-2.5 py-1 rounded-full border truncate cursor-help">
+            {statusNome}
           </span>
         </div>
 

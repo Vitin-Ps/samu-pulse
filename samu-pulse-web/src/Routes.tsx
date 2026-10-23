@@ -6,6 +6,8 @@ import Spinner from './pages/components/Elements/Spinner';
 const Home = lazy(() => import('./pages/Home').then(module => ({default: module.Home})));
 const AddMemberPage = lazy(() => import('./pages/AddMember').then(module => ({default: module.AddMemberPage})));
 const ListMembersPage = lazy(() => import('./pages/ListMembers').then(module => ({default: module.ListMembersPage})));
+const AdminPage = lazy(() => import('./pages/Admin/AdminPage').then(module => ({default: module.AdminPage})));
+const AdminUsersPage = lazy(() => import('./pages/Admin/AdminUsersPage').then(module => ({default: module.AdminUsersPage})));
 const pageFallback = <div role="status" className="flex items-center gap-3 p-6 text-samu-text"><Spinner size={0.7} />Carregando página...</div>;
 import App from './App';
 import {RequireAuth} from './Auth/RequireAuth';
@@ -18,6 +20,30 @@ export const routes: RouteObject[] = [
     element: <App />,
     errorElement: <ErrorPage />,
     children: [
+      {
+        path: 'admin/usuarios',
+        element: (
+          <RequireAuth tipoUsuario={TipoUsuario.ADMIN}>
+            <Suspense fallback={pageFallback}><AdminUsersPage /></Suspense>
+          </RequireAuth>
+        ),
+      },
+      {
+        path: 'admin',
+        element: (
+          <RequireAuth tipoUsuario={TipoUsuario.ADMIN}>
+            <Suspense fallback={pageFallback}><AdminPage /></Suspense>
+          </RequireAuth>
+        ),
+      },
+      {
+        path: 'admin/membros',
+        element: (
+          <RequireAuth tipoUsuario={TipoUsuario.ADMIN}>
+            <Suspense fallback={pageFallback}><ListMembersPage /></Suspense>
+          </RequireAuth>
+        ),
+      },
       {
         path: 'auth/sign-in',
         element: <SignInPage />,

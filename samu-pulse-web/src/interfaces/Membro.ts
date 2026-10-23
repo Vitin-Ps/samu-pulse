@@ -1,3 +1,5 @@
+import {StatusMembro} from './StatusMembro';
+
 export enum TipoConversao {
   RECONCILIANDO = 'RECONCILIANDO',
   ACEITANDO = 'ACEITANDO',
@@ -6,13 +8,6 @@ export enum TipoConversao {
 export enum TipoMembro {
   MEMBRO = 'MEMBRO',
   NOVO_CONVERTIDO = 'NOVO_CONVERTIDO',
-}
-
-export enum StatusMembro {
-  DISTANTE = 'DISTANTE',
-  ATIVO = 'ATIVO',
-  AFASTADO = 'AFASTADO',
-  OUTRA_IGREJA = 'OUTRA_IGREJA',
 }
 
 export interface Membro {
@@ -27,14 +22,15 @@ export interface Membro {
   dataUltimoContato?: string;
   dataNascimento?: string;
   imagemUrl?: string;
-  status: StatusMembro;
+  cod_status: number | null;
+  status: StatusMembro | null;
   tipo: TipoMembro; 
 }
 
 export interface MembroJson {
   id?: number;
   nome: string;
-  status: StatusMembro;
+  cod_status: number | null;
   telefone?: string;
   dataConversao?: string;
   tipoConversao?: TipoConversao;

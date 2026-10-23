@@ -1,4 +1,4 @@
-import {MembroJson, StatusMembro} from '../interfaces/Membro';
+import {MembroJson} from '../interfaces/Membro';
 import {MembroService} from '../services';
 import useTratadorErroApi from './useTratadorErroApi';
 
@@ -17,7 +17,7 @@ export const useMembro = () => {
   const listarPageMembros = async (
     search?: string,
     dataNascimento?: string,
-    status?: StatusMembro,
+    codStatus?: number,
     size?: number,
     page?: number,
     sort?: string,
@@ -27,7 +27,7 @@ export const useMembro = () => {
       membroService.listarPageMembros(
         search,
         dataNascimento,
-        status,
+        codStatus,
         size,
         page,
         sort,

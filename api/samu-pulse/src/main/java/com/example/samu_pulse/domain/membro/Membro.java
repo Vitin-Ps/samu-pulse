@@ -31,21 +31,23 @@ public class Membro {
     private LocalDateTime dataUltimoContato;
     @Enumerated(EnumType.STRING)
     private TipoMembro tipo;
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cod_status")
+    @Setter
     private StatusMembro status;
     @Setter
     private String imagemUrl;
     private Boolean ativo = true;
 
 
-    public Membro(DadosMembroRequest dados) {
+    public Membro(DadosMembroRequest dados, StatusMembro status) {
         this.nome = dados.nome();
         this.telefone = dados.telefone();
         this.dataNascimento = dados.dataNascimento();
         this.endereco = dados.endereco();
         this.observacao = dados.observacao();
         this.tipo = TipoMembro.MEMBRO;
-        this.status = dados.status();
+        this.status = status;
         this.ativo = true;
     }
 
@@ -76,8 +78,6 @@ public class Membro {
             this.observacao = dados.observacao();
             alterado = true;
         }
-
-        this.status = dados.status();
 
         return alterado;
     }

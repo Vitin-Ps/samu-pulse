@@ -7,10 +7,10 @@ import {
   getUrlCarregarImg,
 } from '../../../services/Extra/FuncionalidadesService';
 import {Avatar} from '../../components/Avatar';
-import {statusMembroOptions} from '../useListMembersModel';
-import SelectWithElement from '../../components/Elements/SelectWithElement';
+import SelectWithElement, {OptionWithIcon} from '../../components/Elements/SelectWithElement';
 
 interface EditMemberModalProps {
+  statusMembroOptions: OptionWithIcon[];
   isOpen: boolean;
   onClose: () => void;
   stateModel: any;
@@ -19,6 +19,7 @@ interface EditMemberModalProps {
 }
 
 export const EditMemberModal: React.FC<EditMemberModalProps> = ({
+  statusMembroOptions,
   isOpen,
   onClose,
   stateModel,
@@ -150,11 +151,11 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
               label="Status do Membro"
               placeholder="Selecione o status"
               data={statusMembroOptions}
-              valor={stateModel.data.membroSelecionado.status}
+              valor={stateModel.data.membroSelecionado.cod_status ?? ''}
               setValor={novoStatus =>
                 stateModel.updateState('membroSelecionado', {
                   ...stateModel.data.membroSelecionado,
-                  status: novoStatus,
+                  cod_status: Number(novoStatus),
                 })
               }
               obrigatorio={true}

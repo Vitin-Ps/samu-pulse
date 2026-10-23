@@ -3,7 +3,7 @@ import {AuthContext} from '../../Auth/AuthContext';
 import {TipoUsuario} from '../../interfaces/Usuario';
 import {useMembro, useStateData} from '../../hooks';
 import {useFunctionsProvider} from '../../contexts/FunctionsProvider';
-import {Membro, MembroJson, StatusMembro} from '../../interfaces/Membro';
+import {Membro, MembroJson} from '../../interfaces/Membro';
 import {Response} from '../../interfaces/Pageable';
 import {MessageService} from '../../services';
 import {
@@ -12,6 +12,8 @@ import {
 } from '../../services/Extra/FuncionalidadesService';
 import {useNavigate} from 'react-router-dom';
 import {OptionWithIcon} from '../components/Elements/SelectWithElement';
+import {useBodyScrollLock} from '../../hooks/useBodyScrollLock';
+import {useStatusMembro} from '../../hooks/useStatusMembro';
 
 export interface ListMembersStateModel {
   membros: Membro[];
@@ -26,17 +28,10 @@ export interface ListMembersStateModel {
   detailsModalOpen: boolean;
   editModalOpen: boolean;
   dataNascimento: string;
-  status?: StatusMembro;
+  status?: number;
   desc: boolean;
   sort: string;
 }
-
-export const statusMembroOptions: OptionWithIcon[] = [
-  {value: StatusMembro.ATIVO, text: 'Ativo'},
-  {value: StatusMembro.DISTANTE, text: 'Distante'},
-  {value: StatusMembro.AFASTADO, text: 'Afastado'},
-  {value: StatusMembro.OUTRA_IGREJA, text: 'Outra Igreja'},
-];
 
 export const camposOptions: OptionWithIcon[] = [
   {value: 'nome', text: 'Nome'},
@@ -48,6 +43,7 @@ export const camposOptions: OptionWithIcon[] = [
 ];
 
 export const useListMembersModel = () => {
+  const {statusMembroOptions} = useStatusMembro();
   const {listarPageMembros, alterarLogoMembro, atualizarMembro, delImgMembro, deletarMembro} =
     useMembro();
   const {user} = useContext(AuthContext);
@@ -60,7 +56,7 @@ export const useListMembersModel = () => {
     membros: [],
     search: '',
     page: 0,
-    size: 10,
+    size: 20,
     totalPages: 0,
     totalElements: 0,
     membroSelecionado: null,
@@ -73,6 +69,8 @@ export const useListMembersModel = () => {
     desc: false,
     sort: 'nome',
   });
+
+  useBodyScrollLock(stateModel.data.detailsModalOpen || stateModel.data.editModalOpen);
 
   const hasFilter = Boolean(
     stateModel.data.search ||
@@ -89,6 +87,8 @@ export const useListMembersModel = () => {
     stateModel.updateState('page', 0);
     stateModel.updateState('sort', 'nome');
     stateModel.updateState('desc', false);
+
+    if (stateModel.data.page !== 0) return;
 
     await fetchMembros({
       search: '',
@@ -110,7 +110,7 @@ export const useListMembersModel = () => {
   }: {
     search: string;
     dataNascimento: string;
-    status: StatusMembro | undefined;
+    status: number | undefined;
     page: number;
     sort: string;
     desc: boolean;
@@ -155,37 +155,39 @@ export const useListMembersModel = () => {
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     stateModel.updateState('page', 0);
+    if (stateModel.data.page !== 0) return;
     fetchMembros({
       search: stateModel.data.search,
       dataNascimento: stateModel.data.dataNascimento,
       status: stateModel.data.status,
-      page: stateModel.data.page,
+      page: 0,
       sort: stateModel.data.sort,
       desc: stateModel.data.desc,
     });
   };
 
   // Controles de paginação
+  const goToPage = (page: number) => {
+    if (Number.isInteger(page) && page >= 0 && page < stateModel.data.totalPages)
+      stateModel.updateState('page', page);
+  };
+
   const nextPage = () => {
-    if (stateModel.data.page < stateModel.data.totalPages - 1)
-      stateModel.updateState('page', stateModel.data.page + 1);
+    goToPage(stateModel.data.page + 1);
   };
 
   const prevPage = () => {
-    if (stateModel.data.page > 0)
-      stateModel.updateState('page', stateModel.data.page - 1);
+    goToPage(stateModel.data.page - 1);
   };
 
   const onOpenDetails = (membro: Membro) => {
     stateModel.updateState('membroSelecionado', membro);
     stateModel.updateState('detailsModalOpen', true);
-    document.body.style.overflow = 'hidden';
   };
 
   const onOpenEdit = (membro: Membro) => {
     stateModel.updateState('membroSelecionado', membro);
     stateModel.updateState('editModalOpen', true);
-    document.body.style.overflow = 'hidden';
   };
 
   const onClose = () => {
@@ -193,7 +195,6 @@ export const useListMembersModel = () => {
     stateModel.updateState('editModalOpen', false);
     stateModel.updateState('membroSelecionado', null);
     stateModel.updateState('imagensSelecionadas', []);
-    document.body.style.overflow = '';
   };
 
   const inativarMembro = (membro: Membro) => {
@@ -251,7 +252,7 @@ export const useListMembersModel = () => {
         : undefined,
       endereco: stateModel.data.membroSelecionado?.endereco || '',
       observacao: stateModel.data.membroSelecionado?.observacao || '',
-      status: stateModel.data.membroSelecionado?.status || StatusMembro.ATIVO,
+      cod_status: stateModel.data.membroSelecionado?.cod_status ?? null,
     };
 
     try {
@@ -266,7 +267,7 @@ export const useListMembersModel = () => {
           'membros',
           stateModel.data.membros.map(membro =>
             membro.id === novosDadosMembro.id
-              ? {...membro, ...novosDadosMembro}
+              ? resAtualiza
               : membro,
           ),
         );
@@ -361,6 +362,7 @@ export const useListMembersModel = () => {
   };
 
   return {
+    statusMembroOptions,
     isAdmin,
     inativarMembro,
     stateModel,
@@ -368,6 +370,7 @@ export const useListMembersModel = () => {
     handleSearch,
     nextPage,
     prevPage,
+    goToPage,
     alterarMembro,
     alterarLogo,
     navigate,

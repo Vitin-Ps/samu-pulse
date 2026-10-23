@@ -30,6 +30,11 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (tokenJWT != null) {
             var subject = tokenService.validaToken(tokenJWT);
             var usuario = repository.findByLogin(subject);
+            if (usuario == null || !usuario.isEnabled()) {
+                SecurityContextHolder.clearContext();
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Usuário inativo ou não encontrado!");
+                return;
+            }
             var autenticacao = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(autenticacao);
         }

@@ -21,3 +21,12 @@ export interface PerfilUsuario {
   nomeExibicao: string | null;
   perfilResponsavel: string;
 }
+
+export interface UsuarioAdmin {
+  id: number;
+  login: string;
+  nomeExibicao: string | null;
+  perfilResponsavel: string;
+  tipoUsuario: TipoUsuario;
+  ativo: boolean;
+}

@@ -1,4 +1,5 @@
-import {FC, lazy, Suspense, useEffect} from 'react';
+import {FC, lazy, Suspense} from 'react';
+import {useBodyScrollLock} from '../../../hooks/useBodyScrollLock';
 import {useFunctionsProvider} from '../../../contexts';
 import {Logo} from '../Logo';
 import Spinner from '../Elements/Spinner';
@@ -14,12 +15,7 @@ interface LoadingProps {
 export const Loading: FC<LoadingProps> = ({title, text}) => {
   const {loading, progress} = useFunctionsProvider();
 
-  useEffect(() => {
-    if (!loading) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = previousOverflow; };
-  }, [loading]);
+  useBodyScrollLock(loading);
 
   if (!loading) return null;
 

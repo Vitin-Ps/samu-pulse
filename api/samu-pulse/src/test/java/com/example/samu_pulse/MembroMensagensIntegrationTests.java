@@ -38,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "spring.datasource.username=${SAMU_TEST_DB_USERNAME:postgres}",
         "spring.datasource.password=${SAMU_TEST_DB_PASSWORD:}",
         "SITE_URL=http://localhost:5173",
+        "cors.allowed-origins=http://localhost:5173,http://127.0.0.1:5173",
         "spring.senha.first-acesso=chave-de-teste",
         "spring.jpa.show-sql=false",
         "file.upload-dir=target/test-uploads"
@@ -55,15 +56,194 @@ class MembroMensagensIntegrationTests {
     Membro membro;
     Usuario autor;
     Usuario admin;
+    StatusMembro statusAtivo;
 
     @BeforeEach
     void preparar() {
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+        statusAtivo = entityManager.createQuery("SELECT s FROM StatusMembro s WHERE s.nome = 'Ativo'", StatusMembro.class)
+                .getSingleResult();
         membro = membros.save(new Membro(new DadosMembroRequest(null, "Membro teste", "11999999999",
-                null, null, null, StatusMembro.ATIVO)));
+                null, null, null, statusAtivo.getCodStatus()), statusAtivo));
         autor = usuario("autor", TipoUsuario.USER);
         admin = usuario("admin", TipoUsuario.ADMIN);
         entityManager.flush();
+    }
+
+    @Test
+    void administradorGerenciaStatusComCorPersonalizada() throws Exception {
+        mvc.perform(post("/status-membro").header("Authorization", token(admin))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nome\":\"Personalizado teste\",\"cor\":\"#a1b2c3\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.cod_status").isNumber())
+                .andExpect(jsonPath("$.cor").value("#a1b2c3"));
+        StatusMembro novo = entityManager.createQuery(
+                "SELECT s FROM StatusMembro s WHERE s.nome = 'Personalizado teste'", StatusMembro.class)
+                .getSingleResult();
+        mvc.perform(get("/status-membro").header("Authorization", token(autor)))
+                .andExpect(status().isOk());
+        mvc.perform(delete("/status-membro/{id}", novo.getCodStatus())
+                        .header("Authorization", token(admin)))
+                .andExpect(status().isNoContent());
+        assertThat(entityManager.find(StatusMembro.class, novo.getCodStatus())).isNull();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void statusAssociadoAMembroNaoPodeSerExcluido(boolean ativo) throws Exception {
+        if (!ativo) membro.inativar();
+        entityManager.flush();
+        mvc.perform(delete("/status-membro/{id}", statusAtivo.getCodStatus())
+                        .header("Authorization", token(admin)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Não é possível excluir um status associado a membros!"));
+    }
+
+    @Test
+    void usuarioSemRoleAdminNaoGerenciaStatus() throws Exception {
+        mvc.perform(post("/status-membro").header("Authorization", token(autor))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nome\":\"Teste\",\"cor\":\"#123456\"}"))
+                .andExpect(status().isForbidden());
+        mvc.perform(delete("/status-membro/{id}", statusAtivo.getCodStatus())
+                        .header("Authorization", token(autor)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void membroUsaStatusDinamicoNoCadastroEdicaoEFiltro() throws Exception {
+        StatusMembro novo = new StatusMembro(null, "Status novo", "#bada55");
+        entityManager.persist(novo);
+        entityManager.flush();
+        String dados = "{\"nome\":\"Membro dinâmico\",\"telefone\":\"11999999999\",\"cod_status\":"
+                + novo.getCodStatus() + "}";
+        mvc.perform(post("/membro").header("Authorization", token(admin))
+                        .contentType(MediaType.APPLICATION_JSON).content(dados))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.cod_status").value(novo.getCodStatus()))
+                .andExpect(jsonPath("$.status.cor").value("#bada55"));
+        mvc.perform(put("/membro").header("Authorization", token(admin))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(dados.replace("{", "{\"id\":" + membro.getId() + ",")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.status.nome").value("Status novo"));
+        mvc.perform(get("/membro").param("search", "").param("cod_status", novo.getCodStatus().toString())
+                        .header("Authorization", token(admin)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.content[0].status.cor").value("#bada55"));
+    }
+
+    @Test
+    void paginacaoPadraoUsaVinteMembrosEPermiteConsultarPagina() throws Exception {
+        for (int i = 0; i < 21; i++) {
+            membros.save(new Membro(new DadosMembroRequest(null, "Paginação " + i, "11999999999",
+                    null, null, null, statusAtivo.getCodStatus()), statusAtivo));
+        }
+        entityManager.flush();
+        mvc.perform(get("/membro").param("search", "").header("Authorization", token(admin)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalPages").value(2))
+                .andExpect(jsonPath("$.content.length()").value(20));
+        mvc.perform(get("/membro").param("search", "").param("page", "1")
+                        .header("Authorization", token(admin)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.number").value(1))
+                .andExpect(jsonPath("$.content.length()").value(2));
+    }
+
+    @Test
+    void preflightPermitePatchDeUsuariosSemExigirAutenticacao() throws Exception {
+        mvc.perform(options("/admin/usuarios/{id}", autor.getId())
+                        .header("Origin", "http://localhost:5173")
+                        .header("Access-Control-Request-Method", "PATCH")
+                        .header("Access-Control-Request-Headers", "authorization,content-type,bypass-tunnel-reminder"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"))
+                .andExpect(header().string("Access-Control-Allow-Methods", org.hamcrest.Matchers.containsString("PATCH")));
+    }
+
+    @Test
+    void corsRespeitaOrigemConfiguradaEMantemAutorizacaoAdmin() throws Exception {
+        mvc.perform(patch("/admin/usuarios/{id}", admin.getId()).header("Authorization", token(autor))
+                        .header("Origin", "http://127.0.0.1:5173")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"tipoUsuario\":\"ADMIN\",\"ativo\":true}"))
+                .andExpect(status().isForbidden())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://127.0.0.1:5173"));
+    }
+
+    @Test
+    void preflightRejeitaOrigemNaoAutorizada() throws Exception {
+        mvc.perform(options("/admin/usuarios/{id}", autor.getId())
+                        .header("Origin", "https://origem-nao-autorizada.example")
+                        .header("Access-Control-Request-Method", "PATCH"))
+                .andExpect(status().isForbidden())
+                .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
+    }
+
+    @Test
+    void administradorListaUsuariosSemExporSenhas() throws Exception {
+        mvc.perform(get("/admin/usuarios").header("Authorization", token(admin)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.content[0].senha").doesNotExist())
+                .andExpect(jsonPath("$.content[0].ativo").value(true));
+        mvc.perform(get("/admin/usuarios").param("search", "autor").header("Authorization", token(admin)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+    @Test
+    void somenteAdministradorPodeConsultarOuAlterarUsuarios() throws Exception {
+        mvc.perform(get("/admin/usuarios").header("Authorization", token(autor)))
+                .andExpect(status().isForbidden());
+        mvc.perform(patch("/admin/usuarios/{id}", admin.getId()).header("Authorization", token(autor))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"tipoUsuario\":\"ADMIN\",\"ativo\":true}"))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/admin/usuarios")).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void administradorAlteraPermissaoEStatusDoUsuario() throws Exception {
+        mvc.perform(patch("/admin/usuarios/{id}", autor.getId()).header("Authorization", token(admin))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"tipoUsuario\":\"LIDER\",\"ativo\":false}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.tipoUsuario").value("LIDER"))
+                .andExpect(jsonPath("$.ativo").value(false)).andExpect(jsonPath("$.senha").doesNotExist());
+        entityManager.flush();
+        entityManager.refresh(autor);
+        assertThat(autor.getTipoUsuario()).isEqualTo(TipoUsuario.LIDER);
+        assertThat(autor.getAtivo()).isFalse();
+        assertThat(autor.getSenha()).isEqualTo("senha-teste");
+        mvc.perform(patch("/admin/usuarios/{id}", autor.getId()).header("Authorization", token(admin))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"tipoUsuario\":\"USER\",\"ativo\":true}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.ativo").value(true));
+    }
+
+    @Test
+    void inativacaoImpedeNovoLoginETokenJaEmitido() throws Exception {
+        autor.setSenha(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("senha-teste"));
+        String tokenAntigo = token(autor);
+        mvc.perform(patch("/admin/usuarios/{id}", autor.getId()).header("Authorization", token(admin))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"tipoUsuario\":\"USER\",\"ativo\":false}"))
+                .andExpect(status().isOk());
+        mvc.perform(get("/auth/perfil").header("Authorization", tokenAntigo))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/auth").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"login\":\"autor\",\"senha\":\"senha-teste\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void remocaoDaRoleAdminValeMesmoComTokenAnterior() throws Exception {
+        String tokenAntigo = token(admin);
+        mvc.perform(patch("/admin/usuarios/{id}", admin.getId()).header("Authorization", tokenAntigo)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"tipoUsuario\":\"USER\",\"ativo\":true}"))
+                .andExpect(status().isOk());
+        mvc.perform(get("/admin/usuarios").header("Authorization", tokenAntigo))
+                .andExpect(status().isForbidden());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"{}", "{\"tipoUsuario\":\"ADMIN\"}", "{\"tipoUsuario\":\"INVALIDO\",\"ativo\":true}"})
+    void alteracaoDeAcessoExigeStatusEPermissaoValidos(String dados) throws Exception {
+        mvc.perform(patch("/admin/usuarios/{id}", autor.getId()).header("Authorization", token(admin))
+                        .contentType(MediaType.APPLICATION_JSON).content(dados))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -204,7 +384,7 @@ class MembroMensagensIntegrationTests {
     void mensagemInexistenteOuDeOutroMembroRetorna404() throws Exception {
         HistoricoMensagem historico = mensagem();
         Membro outro = membros.save(new Membro(new DadosMembroRequest(null, "Outro", "11999999999",
-                null, null, null, StatusMembro.ATIVO)));
+                null, null, null, statusAtivo.getCodStatus()), statusAtivo));
         for (String caminho : new String[] {base() + "/9223372036854775807",
                 "/membro/" + outro.getId() + "/mensagens/" + historico.getId()}) {
             mvc.perform(put(caminho).header("Authorization", token(autor))

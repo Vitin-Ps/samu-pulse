@@ -24,6 +24,9 @@ public class MembroService {
     @Autowired
     private ArquivoService arquivoService;
 
+    @Autowired
+    private StatusMembroService statusService;
+
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public void inativarMembro(Integer id) {
@@ -36,7 +39,7 @@ public class MembroService {
     }
 
     public MembroResponse createMembro(DadosMembroRequest dados) {
-        Membro newMembro = new Membro(dados);
+        Membro newMembro = new Membro(dados, statusService.buscar(dados.cod_status()));
 
         membroRepository.save(newMembro);
 
@@ -121,6 +124,7 @@ public class MembroService {
         if (membro == null) throw new ApiException("Membro não existe!");
 
         membro.atualizaInformacoes(dados);
+        membro.setStatus(statusService.buscar(dados.cod_status()));
 
         return new MembroResponse(membro);
     }

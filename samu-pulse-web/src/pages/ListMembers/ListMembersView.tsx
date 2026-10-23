@@ -4,7 +4,6 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useNavigate} from 'react-router-dom';
 import {
   camposOptions,
-  statusMembroOptions,
   useListMembersModel,
 } from './useListMembersModel';
 import {
@@ -26,10 +25,12 @@ import {EditMemberModal} from './components/EditMemberModal';
 import {Membro} from '../../interfaces/Membro';
 import {AspectRatio, ImageCropModal, Input} from '../components/Elements';
 import SelectWithElement from '../components/Elements/SelectWithElement';
+import Select from '../components/Elements/Select';
 import InputCheckBox from '../components/Elements/InputCheckBox';
 import {getColor} from '../../interfaces/Colors';
 
 export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
+  statusMembroOptions,
   isAdmin,
   inativarMembro,
   stateModel,
@@ -38,6 +39,7 @@ export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
   handleSearch,
   nextPage,
   prevPage,
+  goToPage,
   alterarMembro,
   alterarLogo,
   navigate,
@@ -119,7 +121,7 @@ export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
                 placeholder="Selecione o status"
                 data={statusMembroOptions}
                 valor={stateModel.data.status || ''}
-                setValor={novoStatus => stateModel.updateState('status', novoStatus)}
+                setValor={novoStatus => stateModel.updateState('status', novoStatus === '' ? undefined : Number(novoStatus))}
                 obrigatorio={false}
               />
             </div>
@@ -206,18 +208,34 @@ export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
       {stateModel.data.totalPages > 0 && (
         <section
           id="section-pagination"
-          className="border-t border-samu-border pt-5 pb-2 flex items-center justify-between">
+          className="border-t border-samu-border pt-5 pb-2 flex flex-wrap items-center justify-between gap-4">
           <span className="text-sm text-samu-neutral font-medium">
             Página {stateModel.data.page + 1} de {stateModel.data.totalPages}
           </span>
           <div className="flex items-center gap-2">
             <button
+              type="button"
+              aria-label="Página anterior"
               onClick={prevPage}
               disabled={stateModel.data.page === 0}
               className="w-9 h-9 flex items-center justify-center rounded-xl border border-samu-border text-samu-text hover:bg-white hover:text-samu-primary hover:border-samu-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
               <FontAwesomeIcon icon={faChevronLeft} className="text-sm" />
             </button>
+            <Select
+              label="Página"
+              flexDirection="row"
+              width="auto"
+              optionDefaultShow={false}
+              valor={stateModel.data.page}
+              setValor={value => goToPage(Number(value))}
+              data={Array.from({length: stateModel.data.totalPages}, (_, page) => ({
+                value: page,
+                text: String(page + 1),
+              }))}
+            />
             <button
+              type="button"
+              aria-label="Próxima página"
               onClick={nextPage}
               disabled={stateModel.data.page >= stateModel.data.totalPages - 1}
               className="w-9 h-9 flex items-center justify-center rounded-xl border border-samu-border text-samu-text hover:bg-white hover:text-samu-primary hover:border-samu-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
@@ -234,6 +252,7 @@ export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
       />
 
       <EditMemberModal
+        statusMembroOptions={statusMembroOptions}
         isOpen={stateModel.data.editModalOpen}
         onClose={onClose}
         stateModel={stateModel}

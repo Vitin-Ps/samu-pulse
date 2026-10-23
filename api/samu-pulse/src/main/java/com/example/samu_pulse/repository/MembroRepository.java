@@ -1,7 +1,6 @@
 package com.example.samu_pulse.repository;
 
 import com.example.samu_pulse.domain.membro.Membro;
-import com.example.samu_pulse.domain.membro.StatusMembro;
 import com.example.samu_pulse.domain.membro.TipoMembro;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 
 public interface MembroRepository extends JpaRepository<Membro, Integer> {
+    boolean existsByStatus_CodStatus(Integer codStatus);
     Page<Membro> findAllByAtivoTrueAndTipo(Pageable pageable, TipoMembro tipoMembro);
 
 
@@ -24,13 +24,13 @@ public interface MembroRepository extends JpaRepository<Membro, Integer> {
                 )
                 AND (CAST(:dataNascimento AS DATE) IS NULL OR m.data_nascimento = :dataNascimento)
                 AND (CAST(:#{#tipoMembro?.name()} AS VARCHAR) IS NULL OR m.tipo = CAST(:#{#tipoMembro?.name()} AS VARCHAR))
-                AND (CAST(:#{#statusMembro?.name()} AS VARCHAR) IS NULL OR m.status = CAST(:#{#statusMembro?.name()} AS VARCHAR))
+                AND (CAST(:codStatus AS INTEGER) IS NULL OR m.cod_status = :codStatus)
                 AND m.ativo = :ativo
             """, nativeQuery = true)
     Page<Membro> searchAllMembers(@Param("search") String search,
                                   @Param("dataNascimento") LocalDate dataNascimento,
                                   @Param("tipoMembro") TipoMembro tipoMembro,
-                                  @Param("statusMembro") StatusMembro statusMembro,
+                                  @Param("codStatus") Integer codStatus,
                                   @Param("ativo") Boolean ativo,
                                   Pageable pageable);
 

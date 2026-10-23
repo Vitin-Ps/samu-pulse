@@ -14,6 +14,10 @@ import java.nio.file.AccessDeniedException;
 
 @RestControllerAdvice
 public class TratadorDeErros {
+    @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
+    public ResponseEntity<String> tratarUsuarioInativo() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuário inativo. Entre em contato com o administrador.");
+    }
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity erro404() {
         return ResponseEntity.notFound().build();

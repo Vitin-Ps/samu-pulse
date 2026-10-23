@@ -1,7 +1,6 @@
 package com.example.samu_pulse.domain.membro.dto;
 
 import com.example.samu_pulse.domain.membro.Membro;
-import com.example.samu_pulse.domain.membro.StatusMembro;
 import com.example.samu_pulse.domain.membro.TipoConversao;
 import com.example.samu_pulse.domain.membro.TipoMembro;
 
@@ -21,12 +20,14 @@ public record MembroResponse(
         LocalDateTime dataUltimoContato,
         TipoMembro tipo,
         String imagemUrl,
-        StatusMembro status
+        Integer cod_status,
+        StatusMembroResponse status
 ) {
     public MembroResponse(Membro membro) {
         this(membro.getId(), membro.getNome(), membro.getDataConversao(), membro.getDataNascimento(),
                 membro.getIsBatizado(), membro.getTipoConversao(), membro.getEndereco(), membro.getTelefone(),
                 membro.getObservacao(), membro.getDataUltimoContato(), membro.getTipo(), membro.getImagemUrl(),
-                membro.getStatus());
+                membro.getStatus() == null ? null : membro.getStatus().getCodStatus(),
+                membro.getStatus() == null ? null : new StatusMembroResponse(membro.getStatus()));
     }
 }

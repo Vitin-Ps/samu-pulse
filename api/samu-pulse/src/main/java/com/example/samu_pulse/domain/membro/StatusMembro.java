@@ -1,17 +1,21 @@
 package com.example.samu_pulse.domain.membro;
 
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.*;
 
+@Entity
+@Table(name = "status_membro")
 @Getter
-public enum StatusMembro {
-    OUTRA_IGREJA("OUTRA_IGREJA"),
-    AFASTADO("AFASTADO"),
-    ATIVO("ATIVO"),
-    DISTANTE("DISTANTE");
-
-    private final String statusMembro;
-
-    StatusMembro(String statusMembro) {
-        this.statusMembro = statusMembro;
-    }
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "codStatus")
+public class StatusMembro {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cod_status")
+    private Integer codStatus;
+    @Setter
+    private String nome;
+    @Setter
+    private String cor;
 }

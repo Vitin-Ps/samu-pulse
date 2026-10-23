@@ -1,4 +1,4 @@
-import {MembroJson, StatusMembro} from '../interfaces/Membro';
+import {MembroJson} from '../interfaces/Membro';
 import api from './api';
 
 class MembroService {
@@ -24,7 +24,7 @@ class MembroService {
   async listarPageMembros(
     search?: string,
     dataNascimento?: string,
-    status?: StatusMembro,
+    codStatus?: number,
     size?: number,
     page?: number,
     sort?: string,
@@ -34,8 +34,8 @@ class MembroService {
       params: {
         search: search ? search : '',
         dataNascimento: dataNascimento ? dataNascimento : '',
-        status: status ? status : '',
-        size: size ? size : 100,
+        cod_status: codStatus ?? '',
+        size: size ? size : 20,
         page: page ? page : 0,
         sort: sort ? sort : 'nome',
         direction: direction ? direction : 'asc',

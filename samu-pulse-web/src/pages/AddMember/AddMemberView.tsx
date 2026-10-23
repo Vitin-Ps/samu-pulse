@@ -18,9 +18,9 @@ import {FC} from 'react';
 import {useAddMemberModel} from './useAddMemberModel';
 import {formatarNumero} from '../../services/Extra/FuncionalidadesService';
 import SelectWithElement from '../components/Elements/SelectWithElement';
-import {statusMembroOptions} from '../ListMembers/useListMembersModel';
 
 export const AddMemberView: FC<ReturnType<typeof useAddMemberModel>> = ({
+  statusMembroOptions,
   stateModel,
   salvarMembro,
 }) => {
@@ -131,8 +131,8 @@ export const AddMemberView: FC<ReturnType<typeof useAddMemberModel>> = ({
             label="Status do Membro"
             placeholder="Selecione o status"
             data={statusMembroOptions}
-            valor={stateModel.data.status}
-            setValor={novoStatus => stateModel.updateState('status', novoStatus)}
+            valor={stateModel.data.cod_status ?? ''}
+            setValor={novoStatus => stateModel.updateState('cod_status', Number(novoStatus))}
             obrigatorio={true}
           />
 
