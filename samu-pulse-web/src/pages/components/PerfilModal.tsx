@@ -9,6 +9,7 @@ import Spinner from './Elements/Spinner';
 export const PerfilModal = ({onClose}: {onClose: () => void}) => {
   const {consultarPerfil, atualizarPerfil, error} = useAuth();
   const [nomeExibicao, setNomeExibicao] = useState('');
+  const [email, setEmail] = useState('');
   const [perfilResponsavel, setPerfilResponsavel] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [carregado, setCarregado] = useState(false);
@@ -23,6 +24,7 @@ export const PerfilModal = ({onClose}: {onClose: () => void}) => {
       if (cancelado) return;
       if (perfil) {
         setNomeExibicao(perfil.nomeExibicao ?? '');
+        setEmail(perfil.email ?? '');
         setPerfilResponsavel(perfil.perfilResponsavel);
         setCarregado(true);
       }
@@ -37,9 +39,9 @@ export const PerfilModal = ({onClose}: {onClose: () => void}) => {
     emCurso.current = true;
     setSalvando(true);
     try {
-      const perfil = await atualizarPerfil(nomeExibicao.trim());
+      const perfil = await atualizarPerfil(nomeExibicao.trim(), email.trim());
       if (!perfil) return;
-      MessageService.successMessage('Nome de exibição atualizado com sucesso!');
+      MessageService.successMessage('Perfil atualizado com sucesso!');
       onClose();
     } finally {
       emCurso.current = false;
@@ -64,12 +66,14 @@ export const PerfilModal = ({onClose}: {onClose: () => void}) => {
           <Input id="nome-exibicao" label="Nome de exibição" required maxLength={255}
             value={nomeExibicao} onChange={event => setNomeExibicao(event.target.value)} disabled={salvando}
             placeholder="Ex.: Maria Souza" autoComplete="name" />
+          <div className="mt-4"><Input id="perfil-email" type="email" label="E-mail para recuperação de senha" maxLength={255}
+            value={email} onChange={event => setEmail(event.target.value)} disabled={salvando} autoComplete="email" /></div>
           <p className="text-sm text-samu-text/70 my-4"><span className="font-medium">Perfil: </span>{perfilResponsavel}</p>
           {error && <p role="alert" className="text-sm text-samu-danger mb-3">{error}</p>}
           <div className="flex flex-col sm:flex-row justify-end gap-2">
             <Button type="button" variant="secondary" onClick={onClose} disabled={salvando}>Cancelar</Button>
             <Button type="submit" disabled={salvando || !nomeExibicao.trim()}
-              className="disabled:opacity-40 disabled:cursor-not-allowed">{salvando ? 'Salvando...' : 'Salvar nome'}</Button>
+              className="disabled:opacity-40 disabled:cursor-not-allowed">{salvando ? 'Salvando...' : 'Salvar perfil'}</Button>
           </div>
         </form>
       )}

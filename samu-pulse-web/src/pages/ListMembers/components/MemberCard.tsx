@@ -33,13 +33,13 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   const statusCor = membro.status?.cor || '#374151';
   return (
     <section className=" relative bg-white rounded-3xl border border-samu-border shadow-sm p-6 flex flex-col gap-4 hover:shadow-md transition-shadow">
-      <div>
+      {onOpenEdit && <div>
         <FontAwesomeIcon
           icon={faEdit}
           className="text-samu-primary text-lg absolute top-5 right-5 cursor-pointer"
           onClick={() => onOpenEdit && onOpenEdit(membro)}
         />
-      </div>
+      </div>}
 
       <div className="flex items-center gap-3">
         <Avatar

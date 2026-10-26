@@ -48,7 +48,10 @@ export const useListMembersModel = () => {
     useMembro();
   const {user} = useContext(AuthContext);
   const isAdmin = user?.tipoUsuario === TipoUsuario.ADMIN;
+  const podeGerenciar = isAdmin || user?.tipoUsuario === TipoUsuario.LIDER;
   const inativando = useRef(false);
+  const tituloRef = useRef<HTMLHeadingElement>(null);
+  const paginaCarregada = useRef(0);
   const {setLoading} = useFunctionsProvider();
   const navigate = useNavigate();
 
@@ -131,6 +134,11 @@ export const useListMembersModel = () => {
         stateModel.updateState('membros', res.content);
         stateModel.updateState('totalPages', res.totalPages);
         stateModel.updateState('totalElements', res.totalElements);
+        if (page !== paginaCarregada.current) {
+          paginaCarregada.current = page;
+          tituloRef.current?.focus({preventScroll: true});
+          window.scrollTo({top: 0, left: 0, behavior: 'instant'});
+        }
       }
     } catch (error) {
       console.error('Erro ao buscar membros:', error);
@@ -186,6 +194,7 @@ export const useListMembersModel = () => {
   };
 
   const onOpenEdit = (membro: Membro) => {
+    if (!podeGerenciar) return;
     stateModel.updateState('membroSelecionado', membro);
     stateModel.updateState('editModalOpen', true);
   };
@@ -362,6 +371,8 @@ export const useListMembersModel = () => {
   };
 
   return {
+    podeGerenciar,
+    tituloRef,
     statusMembroOptions,
     isAdmin,
     inativarMembro,

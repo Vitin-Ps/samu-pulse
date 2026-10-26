@@ -2,6 +2,7 @@ import React, {RefObject} from 'react';
 import {Option} from '../../../interfaces/Option';
 
 interface SelectProps {
+  disabled?: boolean;
   label?: string;
   setValor?: (valor: any) => void;
   onInput?: (valor: any) => void;
@@ -21,6 +22,7 @@ interface SelectProps {
 }
 
 const Select: React.FC<SelectProps> = ({
+  disabled,
   label,
   setValor,
   valor,
@@ -52,6 +54,7 @@ const Select: React.FC<SelectProps> = ({
         </label>
       )}
       <select
+        disabled={disabled}
         className={`w-full bg-white transition-all outline-none ${
           classSelect
             ? classSelect

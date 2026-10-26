@@ -4,6 +4,7 @@ import {ErrorPage} from './pages/ErrorPage';
 import Spinner from './pages/components/Elements/Spinner';
 
 const Home = lazy(() => import('./pages/Home').then(module => ({default: module.Home})));
+const AuthLinkPage = lazy(() => import('./pages/AuthLinks/AuthLinkPage').then(module => ({default: module.AuthLinkPage})));
 const AddMemberPage = lazy(() => import('./pages/AddMember').then(module => ({default: module.AddMemberPage})));
 const ListMembersPage = lazy(() => import('./pages/ListMembers').then(module => ({default: module.ListMembersPage})));
 const AdminPage = lazy(() => import('./pages/Admin/AdminPage').then(module => ({default: module.AdminPage})));
@@ -20,6 +21,9 @@ export const routes: RouteObject[] = [
     element: <App />,
     errorElement: <ErrorPage />,
     children: [
+      {path: 'auth/sign-up', element: <Suspense fallback={pageFallback}><AuthLinkPage key="cadastro" modo="cadastro" /></Suspense>},
+      {path: 'auth/sign-in/forgot-password', element: <Suspense fallback={pageFallback}><AuthLinkPage key="recuperar" modo="recuperar" /></Suspense>},
+      {path: 'auth/sign-in/password-reset', element: <Suspense fallback={pageFallback}><AuthLinkPage key="senha" modo="senha" /></Suspense>},
       {
         path: 'admin/usuarios',
         element: (
@@ -52,7 +56,7 @@ export const routes: RouteObject[] = [
       {
         index: true,
         element: (
-          <RequireAuth tipoUsuario={TipoUsuario.LIDER}>
+          <RequireAuth tipoUsuario={TipoUsuario.USER}>
             <Suspense fallback={pageFallback}><Home /></Suspense>
           </RequireAuth>
         ),
@@ -68,7 +72,7 @@ export const routes: RouteObject[] = [
       {
         path: 'list-members',
         element: (
-          <RequireAuth tipoUsuario={TipoUsuario.LIDER}>
+          <RequireAuth tipoUsuario={TipoUsuario.USER}>
             <Suspense fallback={pageFallback}><ListMembersPage /></Suspense>
           </RequireAuth>
         ),

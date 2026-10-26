@@ -45,7 +45,7 @@ export const MemberMessagesSection = ({idMembro}: {idMembro: number}) => {
           </div>
         ) : data.mensagens.length === 0 ? (
           <p className="text-sm text-samu-text/70 text-center rounded-2xl border border-samu-border bg-samu-bg p-6">
-            Nenhuma mensagem registrada. Adicione a primeira mensagem abaixo.
+            Nenhuma mensagem registrada.{model.podeGerenciar && ' Adicione a primeira mensagem abaixo.'}
           </p>
         ) : (
           <div className="space-y-3">
@@ -120,7 +120,7 @@ export const MemberMessagesSection = ({idMembro}: {idMembro: number}) => {
         </div>
       )}
 
-      <div ref={editor} className="border-t border-samu-border pt-4">
+      {model.podeGerenciar && <div ref={editor} className="border-t border-samu-border pt-4">
         {data.editorAberto ? (
           <form onSubmit={model.salvar} aria-label={data.mensagemEmEdicao ? 'Editar mensagem' : 'Nova mensagem'}>
             <h5 className="font-semibold text-samu-text mb-3">{data.mensagemEmEdicao ? 'Editar mensagem' : 'Nova mensagem'}</h5>
@@ -143,7 +143,7 @@ export const MemberMessagesSection = ({idMembro}: {idMembro: number}) => {
           <Button type="button" icon={faPlus} onClick={() => model.abrirEditor()} disabled={model.ocupado}
             className="disabled:opacity-40 disabled:cursor-not-allowed">Nova mensagem</Button>
         )}
-      </div>
+      </div>}
     </section>
   );
 };

@@ -14,6 +14,10 @@ import java.nio.file.AccessDeniedException;
 
 @RestControllerAdvice
 public class TratadorDeErros {
+    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
+    public ResponseEntity<String> tratarCredenciaisInvalidas() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário ou senha incorretos!");
+    }
     @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
     public ResponseEntity<String> tratarUsuarioInativo() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Usuário inativo. Entre em contato com o administrador.");

@@ -9,6 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
+    java.util.Optional<Usuario> findByEmailIgnoreCaseAndAtivoTrue(String email);
+    boolean existsByEmailIgnoreCaseAndAtivoTrueAndIdNot(String email, Integer id);
+    boolean existsByLogin(String login);
     @Query("""
             SELECT u FROM Usuario u
             WHERE LOWER(u.login) LIKE LOWER(CONCAT('%', :search, '%'))

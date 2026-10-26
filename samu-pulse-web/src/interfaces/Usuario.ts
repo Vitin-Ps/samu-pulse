@@ -18,6 +18,7 @@ export interface UsuarioAlteracaoJson {
 }
 
 export interface PerfilUsuario {
+  email: string | null;
   nomeExibicao: string | null;
   perfilResponsavel: string;
 }

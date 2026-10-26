@@ -52,6 +52,9 @@ Thumbs.db
 ### Local Docs (nao commitar) ###
 docs/
 
+### Local uploads ###
+/uploads/
+
 deploy/deploy.sh
 deploy/deploy-curto.sh
 deploy/docker-compose.yml

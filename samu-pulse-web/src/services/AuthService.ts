@@ -53,8 +53,8 @@ class AuthService {
     return resposta.data;
   }
 
-  async atualizarPerfil(nomeExibicao: string) {
-    const resposta = await api.put<PerfilUsuario>('/auth/perfil', {nomeExibicao});
+  async atualizarPerfil(nomeExibicao: string, email?: string) {
+    const resposta = await api.put<PerfilUsuario>('/auth/perfil', {nomeExibicao, email});
     return resposta.data;
   }
 

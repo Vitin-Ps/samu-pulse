@@ -33,11 +33,13 @@ public class HistoricoMensagemService {
     @Transactional(readOnly = true)
     public Page<HistoricoMensagemResponse> listarMensagens(Integer idMembro, Pageable pageable) {
         buscarMembroAtivo(idMembro);
-        Integer idUsuario = usuarioService.usuarioAutenticado().getId();
+        Usuario usuario = usuarioService.usuarioAutenticado();
+        Integer idUsuario = usuario.getTipoUsuario() == com.example.samu_pulse.domain.usuario.TipoUsuario.USER ? null : usuario.getId();
         return historicoMensagemRepository.findAllByMembroId(idMembro, pageable)
                 .map(historico -> new HistoricoMensagemResponse(historico, idUsuario));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIDER')")
     public HistoricoMensagemResponse criarMensagem(Integer idMembro, DadosHistoricoMensagemRequest dados) {
         Membro membro = buscarMembroAtivo(idMembro);
         Usuario usuario = usuarioService.usuarioAutenticado();
@@ -49,12 +51,14 @@ public class HistoricoMensagemService {
         return new HistoricoMensagemResponse(historico, usuario.getId());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIDER')")
     public HistoricoMensagemResponse editarMensagem(Integer idMembro, Long id, DadosHistoricoMensagemRequest dados) {
         HistoricoMensagem historico = buscarMensagemDoAutor(idMembro, id);
         historico.atualizarMensagem(dados.mensagem());
         return new HistoricoMensagemResponse(historico, usuarioService.usuarioAutenticado().getId());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIDER')")
     public void excluirMensagem(Integer idMembro, Long id) {
         HistoricoMensagem historico = buscarMensagemDoAutor(idMembro, id);
         historicoMensagemRepository.delete(historico);

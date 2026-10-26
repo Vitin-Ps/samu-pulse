@@ -38,6 +38,7 @@ public class MembroService {
         membro.inativar();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIDER')")
     public MembroResponse createMembro(DadosMembroRequest dados) {
         Membro newMembro = new Membro(dados, statusService.buscar(dados.cod_status()));
 
@@ -95,6 +96,7 @@ public class MembroService {
     }
 
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIDER')")
     public String atualizaImg(MultipartFile imagem, Long idMembro) {
         Membro membro = membroRepository.getReferenceByIdAndAtivoTrue(idMembro);
 
@@ -112,6 +114,7 @@ public class MembroService {
         return imagemUrl;
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIDER')")
     public void delImg(Long id, String imgUrl) {
         Membro membro = membroRepository.getReferenceByIdAndAtivoTrue(id);
         if (membro == null) throw new ApiException("Membro não existe!");
@@ -119,6 +122,7 @@ public class MembroService {
         membro.setImagemUrl(null);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIDER')")
     public MembroResponse updateMember(@Valid DadosMembroUpdate dados) {
         Membro membro = membroRepository.getReferenceByIdAndAtivoTrue(dados.id());
         if (membro == null) throw new ApiException("Membro não existe!");

@@ -32,6 +32,9 @@ public class SecurityConfiguratios {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/arquivos/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/sign-up", "/token/token-senha", "/token/consultar-convite").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/token/senha").permitAll()
+                        .requestMatchers("/token/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/auth/adm").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
 //                        .requestMatchers(HttpMethod.GET, "/barbearia/{id:\\d+}").permitAll()  // Aceita apenas se o ID for numérico

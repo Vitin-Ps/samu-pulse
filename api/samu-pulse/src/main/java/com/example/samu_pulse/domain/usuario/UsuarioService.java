@@ -31,6 +31,9 @@ public class UsuarioService {
     @PreAuthorize("hasRole('ADMIN')")
     public UsuarioAdminResponse atualizarAcesso(Integer id, DadosAcessoUsuarioUpdate dados) {
         Usuario usuario = usuarioRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        if (id.equals(usuarioAutenticado().getId()) && dados.tipoUsuario() != usuario.getTipoUsuario()) {
+            throw new com.example.samu_pulse.infra.exception.ApiException("Você não pode alterar seu próprio tipo de usuário.");
+        }
         usuario.setTipoUsuario(dados.tipoUsuario());
         usuario.setAtivo(dados.ativo());
         return new UsuarioAdminResponse(usuario);
@@ -54,6 +57,12 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(usuarioAutenticado().getId())
                 .orElseThrow(EntityNotFoundException::new);
         usuario.setNomeExibicao(dados.nomeExibicao().strip());
+        if (dados.email() != null) {
+            String email = dados.email().isBlank() ? null : dados.email().strip();
+            if (email != null && usuarioRepository.existsByEmailIgnoreCaseAndAtivoTrueAndIdNot(email, usuario.getId()))
+                throw new com.example.samu_pulse.infra.exception.ApiException("E-mail já cadastrado!");
+            usuario.setEmail(email);
+        }
         return new PerfilResponse(usuario);
     }
 }

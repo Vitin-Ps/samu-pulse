@@ -65,7 +65,7 @@ class MembroMensagensIntegrationTests {
                 .getSingleResult();
         membro = membros.save(new Membro(new DadosMembroRequest(null, "Membro teste", "11999999999",
                 null, null, null, statusAtivo.getCodStatus()), statusAtivo));
-        autor = usuario("autor", TipoUsuario.USER);
+        autor = usuario("autor", TipoUsuario.LIDER);
         admin = usuario("admin", TipoUsuario.ADMIN);
         entityManager.flush();
     }
@@ -231,7 +231,8 @@ class MembroMensagensIntegrationTests {
     @Test
     void remocaoDaRoleAdminValeMesmoComTokenAnterior() throws Exception {
         String tokenAntigo = token(admin);
-        mvc.perform(patch("/admin/usuarios/{id}", admin.getId()).header("Authorization", tokenAntigo)
+        Usuario outroAdmin = usuario("outro-admin", TipoUsuario.ADMIN);
+        mvc.perform(patch("/admin/usuarios/{id}", admin.getId()).header("Authorization", token(outroAdmin))
                         .contentType(MediaType.APPLICATION_JSON).content("{\"tipoUsuario\":\"USER\",\"ativo\":true}"))
                 .andExpect(status().isOk());
         mvc.perform(get("/admin/usuarios").header("Authorization", tokenAntigo))
@@ -244,6 +245,42 @@ class MembroMensagensIntegrationTests {
         mvc.perform(patch("/admin/usuarios/{id}", autor.getId()).header("Authorization", token(admin))
                         .contentType(MediaType.APPLICATION_JSON).content(dados))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void administradorNaoPodeAlterarProprioTipo() throws Exception {
+        mvc.perform(patch("/admin/usuarios/{id}", admin.getId()).header("Authorization", token(admin))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"tipoUsuario\":\"LIDER\",\"ativo\":false}"))
+                .andExpect(status().isBadRequest());
+        assertThat(admin.getTipoUsuario()).isEqualTo(TipoUsuario.ADMIN);
+        assertThat(admin.getAtivo()).isTrue();
+    }
+
+    @Test
+    void userConsultaMembrosEHistoricoMasNaoPodeModificarNada() throws Exception {
+        Usuario leitor = usuario("leitor", TipoUsuario.USER);
+        HistoricoMensagem historico = mensagens.saveAndFlush(new HistoricoMensagem(membro, leitor, "Histórico existente"));
+        String autenticacao = token(leitor);
+        mvc.perform(get("/membro").param("search", "").header("Authorization", autenticacao))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content[0].id").value(membro.getId()));
+        mvc.perform(get(base()).header("Authorization", autenticacao))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.content[0].podeAlterar").value(false));
+        String cadastro = "{\"nome\":\"Teste\",\"telefone\":\"11999999999\",\"cod_status\":" + statusAtivo.getCodStatus() + "}";
+        mvc.perform(post("/membro").header("Authorization", autenticacao).contentType(MediaType.APPLICATION_JSON).content(cadastro))
+                .andExpect(status().isForbidden());
+        mvc.perform(put("/membro").header("Authorization", autenticacao).contentType(MediaType.APPLICATION_JSON)
+                        .content(cadastro.replace("{", "{\"id\":" + membro.getId() + ",")))
+                .andExpect(status().isForbidden());
+        mvc.perform(delete("/membro/{id}", membro.getId()).header("Authorization", autenticacao)).andExpect(status().isForbidden());
+        mvc.perform(delete("/membro/img/{id}/foto.png", membro.getId()).header("Authorization", autenticacao)).andExpect(status().isForbidden());
+        mvc.perform(multipart("/membro/img").file("imagem", new byte[]{1}).param("idMembro", membro.getId().toString())
+                        .header("Authorization", autenticacao)).andExpect(status().isForbidden());
+        mvc.perform(post(base()).header("Authorization", autenticacao).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mensagem\":\"Indevida\"}")).andExpect(status().isForbidden());
+        mvc.perform(put(base() + "/" + historico.getId()).header("Authorization", autenticacao).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mensagem\":\"Indevida\"}")).andExpect(status().isForbidden());
+        mvc.perform(delete(base() + "/" + historico.getId()).header("Authorization", autenticacao)).andExpect(status().isForbidden());
+        assertThat(historico.getMensagem()).isEqualTo("Histórico existente");
     }
 
     @Test
@@ -281,7 +318,7 @@ class MembroMensagensIntegrationTests {
     }
 
     @ParameterizedTest
-    @EnumSource(TipoUsuario.class)
+    @EnumSource(value = TipoUsuario.class, names = {"ADMIN", "LIDER"})
     void usuarioAutenticadoCriaEListaComAutorEDatas(TipoUsuario tipo) throws Exception {
         Usuario remetente = usuario("remetente", tipo);
         mvc.perform(post(base()).header("Authorization", token(remetente))
@@ -487,7 +524,7 @@ class MembroMensagensIntegrationTests {
         entityManager.clear();
         var atualizado = usuarios.findById(autor.getId()).orElseThrow();
         assertThat(atualizado.getLogin()).isEqualTo("autor");
-        assertThat(atualizado.getTipoUsuario()).isEqualTo(TipoUsuario.USER);
+        assertThat(atualizado.getTipoUsuario()).isEqualTo(TipoUsuario.LIDER);
         assertThat(atualizado.getPerfilResponsavel()).isEqualTo("Perfil autor");
         assertThat(usuarios.findById(admin.getId()).orElseThrow().getNomeExibicao()).isEqualTo("Maria Souza");
         mvc.perform(post(base()).header("Authorization", token(autor)).contentType(MediaType.APPLICATION_JSON)

@@ -11,13 +11,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 @Service
 public class TokenService {
     @Value("${spring.security.jwt.secret}")
     private String secret;
+
+    @Value("${spring.security.jwt.expiration-ms:604800000}")
+    private long expirationMs;
 
     public String gerarToken(Usuario usuario) {
         try {
@@ -56,6 +57,6 @@ public class TokenService {
     }
 
     private Instant dataExpiracao() {
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+        return Instant.now().plusMillis(expirationMs);
     }
 }

@@ -30,8 +30,10 @@ import InputCheckBox from '../components/Elements/InputCheckBox';
 import {getColor} from '../../interfaces/Colors';
 
 export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
+  tituloRef,
   statusMembroOptions,
   isAdmin,
+  podeGerenciar,
   inativarMembro,
   stateModel,
   hasFilter,
@@ -57,7 +59,7 @@ export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
             <FontAwesomeIcon icon={faUsers} />
           </div>
           <div>
-            <h1 className="text-2xl font-semibold text-samu-text">
+            <h1 ref={tituloRef} tabIndex={-1} className="text-2xl font-semibold text-samu-text outline-none">
               Membros Cadastrados
             </h1>
             <p className="text-sm text-samu-neutral mt-0.5">
@@ -68,12 +70,12 @@ export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
             </p>
           </div>
         </div>
-        <button
+        {podeGerenciar && <button
           onClick={() => navigate('/add-member')}
           className="w-full sm:w-auto px-5 py-2.5 bg-samu-primary hover:bg-blue-600 text-white font-medium rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
           <FontAwesomeIcon icon={faPlus} />
           Novo Membro
-        </button>
+        </button>}
       </section>
 
       <form onSubmit={handleSearch} id="section-search" className="mb-8">
@@ -184,7 +186,7 @@ export const ListMembersView: FC<ReturnType<typeof useListMembersModel>> = ({
               membro={membro}
               getUrlCarregarImg={getUrlCarregarImg}
               onOpenDetails={onOpenDetails}
-              onOpenEdit={onOpenEdit}
+              onOpenEdit={podeGerenciar ? onOpenEdit : undefined}
               onInativar={isAdmin ? inativarMembro : undefined}
             />
           ))

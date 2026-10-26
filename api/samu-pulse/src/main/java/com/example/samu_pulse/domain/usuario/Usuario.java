@@ -27,6 +27,7 @@ public class Usuario implements UserDetails {
     private String senha;
     private String perfilResponsavel;
     private String nomeExibicao;
+    private String email;
     @Enumerated(EnumType.STRING)
     private TipoUsuario tipoUsuario;
     @Setter

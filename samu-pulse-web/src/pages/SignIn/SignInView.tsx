@@ -12,6 +12,7 @@ import {faUser, faEye, faEyeSlash} from '@fortawesome/free-regular-svg-icons';
 import {useSignInModel} from './useSignInModel';
 import {Button} from '../components/Elements/Button';
 import {Input} from '../components/Elements/Input';
+import {Link} from 'react-router-dom';
 
 export const SignInView: FC<ReturnType<typeof useSignInModel>> = ({
   stateModel,
@@ -107,6 +108,9 @@ export const SignInView: FC<ReturnType<typeof useSignInModel>> = ({
               </a>
             </div> */}
 
+            <div className="flex justify-end mt-3">
+              <Link to="/auth/sign-in/forgot-password" className="text-xs font-medium text-samu-primary hover:underline">Esqueceu sua senha?</Link>
+            </div>
             <Button
               type="submit"
               disabled={loading}

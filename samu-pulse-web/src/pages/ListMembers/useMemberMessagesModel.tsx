@@ -1,4 +1,6 @@
-import {FormEvent, useEffect, useRef, useState} from 'react';
+import {FormEvent, useContext, useEffect, useRef, useState} from 'react';
+import {AuthContext} from '../../Auth/AuthContext';
+import {TipoUsuario} from '../../interfaces/Usuario';
 import {useStateData} from '../../hooks';
 import {useHistoricoMensagem} from '../../hooks/useHistoricoMensagem';
 import {HistoricoMensagem} from '../../interfaces/HistoricoMensagem';
@@ -19,6 +21,8 @@ interface MemberMessagesState {
 }
 
 export const useMemberMessagesModel = (idMembro: number) => {
+  const {user} = useContext(AuthContext);
+  const podeGerenciar = user?.tipoUsuario === TipoUsuario.ADMIN || user?.tipoUsuario === TipoUsuario.LIDER;
   const api = useHistoricoMensagem();
   const [refresh, setRefresh] = useState(0);
   const ativo = useRef(true);
@@ -60,23 +64,23 @@ export const useMemberMessagesModel = (idMembro: number) => {
 
   const ocupado = data.salvando || data.excluindoId !== null;
   const podeAlterar = (mensagem: HistoricoMensagem) =>
-    mensagem.podeAlterar === true;
+    podeGerenciar && mensagem.podeAlterar === true;
 
   const abrirEditor = (mensagem?: HistoricoMensagem) => {
-    if (ocupado || (mensagem && !podeAlterar(mensagem))) return;
+    if (!podeGerenciar || ocupado || (mensagem && !podeAlterar(mensagem))) return;
     api.clearError();
     updateMultipleStates({editorAberto: true, mensagemEmEdicao: mensagem ?? null, conteudo: mensagem?.mensagem ?? ''});
   };
 
   const cancelarEdicao = () => {
-    if (operacaoEmCurso.current) return;
+    if (!podeGerenciar || operacaoEmCurso.current) return;
     api.clearError();
     updateMultipleStates({editorAberto: false, mensagemEmEdicao: null, conteudo: ''});
   };
 
   const salvar = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (operacaoEmCurso.current) return;
+    if (!podeGerenciar || operacaoEmCurso.current) return;
     const mensagem = data.conteudo.trim();
     if (!mensagem) {
       MessageService.alertMessage('Escreva o conteúdo da mensagem.');
@@ -125,6 +129,7 @@ export const useMemberMessagesModel = (idMembro: number) => {
   };
 
   return {
+    podeGerenciar,
     stateModel, ocupado, podeAlterar, abrirEditor, cancelarEdicao, salvar, excluir,
     erroOperacao: api.error,
     recarregar: () => setRefresh(value => value + 1),

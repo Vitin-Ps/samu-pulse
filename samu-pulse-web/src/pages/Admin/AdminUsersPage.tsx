@@ -24,11 +24,20 @@ export const AdminUsersPage = () => {
   const stateModel = useStateData({usuarios: [] as UsuarioAdmin[], search: '', page: 0, totalPages: 0, totalElements: 0});
   const [selecionado, setSelecionado] = useState<UsuarioAdmin | null>(null);
   const salvando = useRef(false);
+  const tituloRef = useRef<HTMLHeadingElement>(null);
+  const paginaCarregada = useRef(0);
   useBodyScrollLock(!!selecionado);
 
   const carregarUsuarios = async (page = stateModel.data.page) => {
     const resposta = await handleRequest(() => UsuarioService.listar(stateModel.data.search, page));
-    if (resposta) stateModel.updateMultipleStates({usuarios: resposta.content, totalPages: resposta.totalPages, totalElements: resposta.totalElements});
+    if (resposta) {
+      stateModel.updateMultipleStates({usuarios: resposta.content, totalPages: resposta.totalPages, totalElements: resposta.totalElements});
+      if (page !== paginaCarregada.current) {
+        paginaCarregada.current = page;
+        tituloRef.current?.focus({preventScroll: true});
+        window.scrollTo({top: 0, left: 0, behavior: 'instant'});
+      }
+    }
   };
 
   useEffect(() => { carregarUsuarios(); }, [stateModel.data.page]);
@@ -69,7 +78,7 @@ export const AdminUsersPage = () => {
         <div className="w-12 h-12 rounded-2xl bg-white border border-samu-border shadow-sm flex items-center justify-center text-samu-primary shrink-0"><FontAwesomeIcon icon={faUserShield} className="text-xl" /></div>
         <div>
           <p className="text-xs font-medium text-samu-primary mb-1">Gestão do sistema</p>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-samu-text">Usuários</h1>
+          <h1 ref={tituloRef} tabIndex={-1} className="text-2xl sm:text-3xl font-semibold tracking-tight text-samu-text outline-none">Usuários</h1>
           <p className="text-sm text-samu-text/60 mt-2">Controle quem tem acesso e o que cada pessoa pode gerenciar.</p>
         </div>
       </div>
@@ -121,12 +130,13 @@ export const AdminUsersPage = () => {
           <form onSubmit={salvarAcesso} className="space-y-5">
             <div className="pr-7"><h2 className="text-xl font-semibold text-samu-text">Alterar acesso</h2><p className="text-sm text-samu-text/60 mt-2 break-words">{selecionado.nomeExibicao || selecionado.login}</p></div>
             <Select label="Permissão" optionDefaultShow={false} valor={selecionado.tipoUsuario} data={permissoes}
+              disabled={selecionado.id === auth.user?.id || loading}
               setValor={tipoUsuario => setSelecionado({...selecionado, tipoUsuario})} />
             <Select label="Status do acesso" optionDefaultShow={false} valor={String(selecionado.ativo)}
               data={[{value: 'true', text: 'Ativo'}, {value: 'false', text: 'Inativo'}]}
               setValor={ativo => setSelecionado({...selecionado, ativo: ativo === 'true'})} />
             <p className="text-xs text-samu-text/60 leading-relaxed">Usuários inativos não podem entrar nem continuar acessando o sistema. As permissões passam a valer nas próximas requisições.</p>
-            {selecionado.id === auth.user?.id && <p className="text-xs text-samu-primary bg-samu-primary-lighter rounded-xl p-3 leading-relaxed">Ao inativar seu acesso ou mudar seu perfil de administrador, sua sessão será encerrada.</p>}
+            {selecionado.id === auth.user?.id && <p className="text-xs text-samu-primary bg-samu-primary-lighter rounded-xl p-3 leading-relaxed">Você não pode alterar seu próprio tipo de usuário. Ao inativar seu acesso, sua sessão será encerrada.</p>}
             <div className="flex flex-wrap justify-end gap-2 pt-2">
               <Button type="button" variant="secondary" onClick={() => setSelecionado(null)}>Cancelar</Button>
               <Button type="submit" icon={faCheck} disabled={loading} className="disabled:opacity-50">Salvar alterações</Button>

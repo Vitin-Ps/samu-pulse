@@ -28,6 +28,14 @@ import static io.micrometer.common.util.StringUtils.isEmpty;
 @RequestMapping("auth")
 public class AuthenticationController {
     @Autowired
+    private com.example.samu_pulse.infra.rawToken.FluxoTokenService fluxoTokenService;
+
+    @PostMapping("/sign-up")
+    public ResponseEntity<Void> cadastrarPorLink(@RequestBody @Valid com.example.samu_pulse.infra.rawToken.DadosFluxoToken.Cadastro dados) {
+        fluxoTokenService.cadastrar(dados);
+        return ResponseEntity.ok().build();
+    }
+    @Autowired
     private UsuarioRepository usuarioRepository;
 
     @Autowired
